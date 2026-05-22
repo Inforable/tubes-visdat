@@ -36,26 +36,50 @@ st.set_page_config(
 # ==============================================================================
 st.markdown("""
     <style>
-    /* Main Layout Styling */
+    /* Hide default Streamlit top header and footer */
+    [data-testid="stHeader"] {
+        display: none !important;
+    }
+    footer {
+        visibility: hidden !important;
+        height: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Main Layout Spacing Optimization */
     .stApp {
         background-color: #f8fafc;
         color: #0f172a;
         font-family: 'Inter', 'Roboto', sans-serif;
+    }
+    .block-container {
+        padding-top: 1.25rem !important;
+        padding-bottom: 0.75rem !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+    
+    /* Global Spacing and Gap Compression */
+    [data-testid="stVerticalBlock"] > div {
+        padding-top: 0.12rem !important;
+        padding-bottom: 0.12rem !important;
+    }
+    [data-testid="stVerticalBlock"] {
+        gap: 0.35rem !important;
     }
     
     /* Header & Branding Banner */
     .branding-banner {
         background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
         border: 1px solid #e2e8f0;
-        border-left: 5px solid #1e3a8a;
-        padding: 24px;
-        border-radius: 12px;
-        margin-bottom: 24px;
+        padding: 10px 16px !important;
+        border-radius: 8px;
+        margin-bottom: 8px !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     }
     .branding-title {
         color: #1e3a8a !important;
-        font-size: 2.3rem;
+        font-size: 1.5rem !important;
         font-weight: 800;
         letter-spacing: -0.5px;
         margin: 0;
@@ -64,8 +88,8 @@ st.markdown("""
     }
     .branding-subtitle {
         color: #475569 !important;
-        font-size: 1.1rem;
-        margin-top: 4px;
+        font-size: 0.85rem !important;
+        margin-top: 2px !important;
         font-weight: 400;
     }
     
@@ -73,55 +97,57 @@ st.markdown("""
     .metric-card {
         background-color: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 20px;
+        border-radius: 8px;
+        padding: 8px 12px !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
         transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         text-align: center;
     }
     .metric-card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-2px);
         border-color: #2563eb;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 6px 12px -3px rgba(0, 0, 0, 0.05), 0 2px 4px -4px rgba(0, 0, 0, 0.05);
     }
     .metric-label {
-        font-size: 0.9rem;
+        font-size: 0.78rem !important;
         font-weight: 600;
         text-transform: uppercase;
         color: #64748b;
         letter-spacing: 0.5px;
-        margin-bottom: 6px;
+        margin-bottom: 2px !important;
     }
     .metric-value {
-        font-size: 2.2rem;
+        font-size: 1.5rem !important;
         font-weight: 800;
         color: #1e3a8a;
+        line-height: 1.1 !important;
     }
     
     /* Glassmorphic Takeaways / Bullet Box */
     .takeaways-box {
         background: rgba(255, 255, 255, 0.85);
         border: 1px solid rgba(37, 99, 235, 0.15);
-        border-radius: 16px;
-        padding: 24px 32px;
-        margin-top: 36px;
+        border-radius: 12px;
+        padding: 16px 24px !important;
+        margin-top: 20px !important;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
     }
     .takeaways-title {
         color: #1e3a8a;
-        font-size: 1.4rem;
+        font-size: 1.25rem !important;
         font-weight: 700;
-        margin-bottom: 16px;
+        margin-bottom: 12px !important;
         display: flex;
         align-items: center;
         gap: 8px;
     }
     .takeaway-bullet {
-        margin-bottom: 12px;
-        line-height: 1.6;
+        margin-bottom: 8px !important;
+        line-height: 1.5;
         color: #334155;
+        font-size: 0.9rem !important;
     }
     .takeaway-bullet strong {
         color: #0f172a;
@@ -136,9 +162,9 @@ st.markdown("""
     /* Filter Section Title */
     .filter-header {
         color: #1e3a8a;
-        font-size: 1.2rem;
+        font-size: 0.95rem !important;
         font-weight: 700;
-        margin-bottom: 16px;
+        margin-bottom: 6px !important;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -147,7 +173,7 @@ st.markdown("""
     [data-baseweb="select"] > div:first-child {
         background-color: #ffffff !important;
         border: 1px solid #e2e8f0 !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
     }
     [data-baseweb="select"] span,
     [data-baseweb="select"] input,
@@ -170,7 +196,7 @@ st.markdown("""
         background-color: rgba(37, 99, 235, 0.08) !important;
         border: 1px solid rgba(37, 99, 235, 0.25) !important;
         border-radius: 6px !important;
-        padding: 2px 6px !important;
+        padding: 1px 4px !important;
     }
     [data-baseweb="tag"] span {
         color: #1e3a8a !important;
@@ -208,7 +234,7 @@ st.markdown("""
 
     /* Premium Styled Segmented Control (Pills) */
     div[data-testid="stSegmentedControl"] {
-        gap: 8px !important;
+        gap: 6px !important;
     }
     div[data-testid="stSegmentedControl"] button {
         background-color: #ffffff !important;
@@ -219,7 +245,8 @@ st.markdown("""
         font-family: 'Inter', sans-serif !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
         transition: all 0.2s ease !important;
-        padding: 6px 16px !important;
+        padding: 4px 12px !important;
+        font-size: 0.85rem !important;
     }
     div[data-testid="stSegmentedControl"] button:hover {
         background-color: #eff6ff !important;
@@ -282,9 +309,9 @@ if data_loaded:
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div>
                         <h1 class="branding-title" style="color: #1e3a8a !important; margin: 0; padding: 0;">Total Kejadian Banjir di Indonesia</h1>
-                        <p class="branding-subtitle" style="color: #475569 !important; margin: 4px 0 0 0;">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</p>
+                        <p class="branding-subtitle" style="color: #475569 !important; margin: 2px 0 0 0;">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</p>
                     </div>
-                    <div style="font-weight: 700; color: #1e3a8a; font-size: 1.1rem; border: 1px solid rgba(30, 58, 138, 0.25); padding: 6px 16px; border-radius: 20px; background: rgba(30, 58, 138, 0.05);">
+                    <div style="font-weight: 700; color: #1e3a8a; font-size: 0.85rem; border: 1px solid rgba(30, 58, 138, 0.25); padding: 4px 12px; border-radius: 20px; background: rgba(30, 58, 138, 0.05);">
                         IF4061 - VISUALISASI DATA
                     </div>
                 </div>
@@ -471,12 +498,10 @@ if data_loaded:
                 </div>
             """, unsafe_allow_html=True)
             
-        st.markdown("<br>", unsafe_allow_html=True)
-
         # ==============================================================================
         # 7. INTERACTIVE GEOSPATIAL MAP (MIDDLE SECTION)
         # ==============================================================================
-        st.markdown(f"### {svg('map_search', 20, '#1e3a8a')} Peta Distribusi Kejadian Banjir Regional", unsafe_allow_html=True)
+        st.markdown(f'<h4 style="color: #1e3a8a; font-size: 1.05rem; margin-top: 2px; margin-bottom: 2px; font-weight: 700;">{svg("map_search", 16, "#1e3a8a")} Peta Distribusi Kejadian Banjir Regional</h4>', unsafe_allow_html=True)
         
         if len(df_province_summary) > 0:
             with st.container(border=True):
@@ -517,13 +542,18 @@ if data_loaded:
                 )
                 
                 fig_map.update_layout(
+                    height=330,
                     paper_bgcolor="#ffffff",
                     plot_bgcolor="#ffffff",
                     margin={"r": 0, "t": 0, "l": 0, "b": 0},
                     coloraxis_colorbar=dict(
                         title="Kejadian",
                         title_font_color="#475569",
-                        tickfont_color="#475569"
+                        tickfont_color="#475569",
+                        thickness=12,
+                        len=0.75,
+                        yanchor="middle",
+                        y=0.5
                     )
                 )
                 
@@ -545,8 +575,6 @@ if data_loaded:
                 st.plotly_chart(fig_map, use_container_width=True)
         else:
             st.info("Tidak ada data spasial untuk filter yang dipilih.")
-
-        st.markdown("<br>", unsafe_allow_html=True)
 
         # ==============================================================================
         # 8. ANALYTICAL CHARTS SECTION (BOTTOM ROW: TWO COLUMNS)
