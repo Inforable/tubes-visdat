@@ -195,23 +195,92 @@ if data_loaded:
         # ==============================================================================
         # B. DYNAMIC HORIZONTAL FILTER PANEL (MAIN PAGE)
         # ==============================================================================
+        # Initialize session state for animation
+        if 'active_year' not in st.session_state:
+            st.session_state.active_year = 2000
+        if 'is_playing' not in st.session_state:
+            st.session_state.is_playing = False
+        if 'timeline_mode' not in st.session_state:
+            st.session_state.timeline_mode = "Rentang Tahun"
+
         st.markdown('<p class="filter-header" style="margin-bottom: 8px;">🔍 Panel Filter Analisis</p>', unsafe_allow_html=True)
         filter_col1, filter_col2 = st.columns([1, 1])
         
+        provinces_available = sorted(list(df_prov_annual['Propinsi'].unique()))
+        
         with filter_col1:
-            # Year Range Slider (2000 - 2025)
-            year_range = st.slider(
-                "Pilih Rentang Tahun",
-                min_value=2000,
-                max_value=2025,
-                value=(2000, 2025),
-                step=1
+            st.markdown('<p style="font-weight: 600; margin-bottom: 4px; color: #475569;">📅 Mode Analisis Waktu</p>', unsafe_allow_html=True)
+            
+            # Interactive toggle for selection mode
+            timeline_mode = st.radio(
+                "Mode Waktu",
+                options=["📅 Rentang Tahun (Statik)", "🎬 Animasi Kronologis (Play)"],
+                index=0 if st.session_state.timeline_mode == "Rentang Tahun" else 1,
+                horizontal=True,
+                label_visibility="collapsed"
             )
-            start_year, end_year = year_range
+            
+            if "Rentang Tahun" in timeline_mode:
+                st.session_state.timeline_mode = "Rentang Tahun"
+                st.session_state.is_playing = False # Auto pause when switching back to range mode
+                year_range = st.slider(
+                    "Pilih Rentang Tahun",
+                    min_value=2000,
+                    max_value=2025,
+                    value=(2000, 2025),
+                    step=1
+                )
+                start_year, end_year = year_range
+            else:
+                st.session_state.timeline_mode = "Animasi Kronologis"
+                # Animasi Kronologis Mode
+                # Display single year slider linked to active_year
+                active_year = st.slider(
+                    "Pilih Tahun",
+                    min_value=2000,
+                    max_value=2025,
+                    value=st.session_state.active_year,
+                    step=1
+                )
+                st.session_state.active_year = active_year
+                start_year = st.session_state.active_year
+                end_year = st.session_state.active_year
+                
+                # Playback buttons row layout
+                btn_col1, btn_col2, btn_col3, btn_col4 = st.columns([1.1, 1.1, 1.1, 2.7])
+                
+                with btn_col1:
+                    if st.button("◀️ Mundur", use_container_width=True, help="Tahun Sebelumnya"):
+                        st.session_state.is_playing = False # Pause on manual click
+                        st.session_state.active_year -= 1
+                        if st.session_state.active_year < 2000:
+                            st.session_state.active_year = 2025
+                        st.rerun()
+                
+                with btn_col2:
+                    play_label = "⏸️ Pause" if st.session_state.is_playing else "▶️ Play"
+                    play_help = "Pause Animasi" if st.session_state.is_playing else "Putar Animasi"
+                    if st.button(play_label, use_container_width=True, help=play_help):
+                        st.session_state.is_playing = not st.session_state.is_playing
+                        st.rerun()
+                        
+                with btn_col3:
+                    if st.button("Maju ▶️", use_container_width=True, help="Tahun Berikutnya"):
+                        st.session_state.is_playing = False # Pause on manual click
+                        st.session_state.active_year += 1
+                        if st.session_state.active_year > 2025:
+                            st.session_state.active_year = 2000
+                        st.rerun()
+                        
+                with btn_col4:
+                    st.markdown(f"""
+                        <div style="font-weight: 700; font-size: 1.1rem; color: #1e3a8a; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.15); padding: 5px 12px; border-radius: 8px; text-align: center;">
+                            Tahun Aktif: {st.session_state.active_year}
+                        </div>
+                    """, unsafe_allow_html=True)
             
         with filter_col2:
             # Province Selector (Multi-select)
-            provinces_available = sorted(list(df_prov_annual['Propinsi'].unique()))
             selected_provinces = st.multiselect(
                 "Pilih Provinsi",
                 options=provinces_available,
@@ -221,7 +290,7 @@ if data_loaded:
             )
         
         # ==============================================================================
-        # C. DATA FILTERING ENGINE
+        # C. DATA FILTERING ENGINE (ALWAYS KEEP MAP FULL WITH GREY INACTIVE PROVINCES)
         # ==============================================================================
         # Filter by selected Year range
         df_filtered = df_prov_annual[
@@ -229,13 +298,16 @@ if data_loaded:
             (df_prov_annual['year'] <= end_year)
         ]
         
-        # Apply Province filter if specified
+        # Apply Province filter only for the statistics of active provinces,
+        # but keep all provinces on the map by merging with the master list.
         if selected_provinces:
-            df_filtered = df_filtered[df_filtered['Propinsi'].isin(selected_provinces)]
+            df_filtered_agg = df_filtered[df_filtered['Propinsi'].isin(selected_provinces)]
+        else:
+            df_filtered_agg = df_filtered
             
         # Aggregate data across the filtered year range per province
         df_province_summary = (
-            df_filtered.groupby('Propinsi')
+            df_filtered_agg.groupby('Propinsi')
             .agg(
                 total_kejadian=('frekuensi_banjir', 'sum'),
                 total_area_km2=('total_area_km2', 'sum'),
@@ -244,12 +316,24 @@ if data_loaded:
             .reset_index()
         )
         
+        # Create a master DataFrame of all provinces to ensure full map visualization at all times
+        df_master_provinces = pd.DataFrame({"Propinsi": provinces_available})
+        df_province_summary = pd.merge(df_master_provinces, df_province_summary, on="Propinsi", how="left")
+        
+        # Fill NaN values to render as grey (value=0) rather than disappearing/leaving holes
+        df_province_summary["total_kejadian"] = df_province_summary["total_kejadian"].fillna(0).astype(int)
+        df_province_summary["total_area_km2"] = df_province_summary["total_area_km2"].fillna(0.0)
+        df_province_summary["median_durasi"] = df_province_summary["median_durasi"].fillna(0.0)
+        
         # Compute dynamic values for KPI Metrics
         total_events = df_province_summary['total_kejadian'].sum()
         affected_prov_count = df_province_summary[df_province_summary['total_kejadian'] > 0]['Propinsi'].nunique()
         
-        if len(df_province_summary) > 0:
-            max_prov_row = df_province_summary.loc[df_province_summary['total_kejadian'].idxmax()]
+        # Only check maximum occurrences province if there is at least one active event
+        if len(df_province_summary[df_province_summary['total_kejadian'] > 0]) > 0:
+            max_prov_row = df_province_summary[df_province_summary['total_kejadian'] > 0].loc[
+                df_province_summary[df_province_summary['total_kejadian'] > 0]['total_kejadian'].idxmax()
+            ]
             max_prov_name = max_prov_row['Propinsi']
             max_prov_val = max_prov_row['total_kejadian']
         else:
@@ -293,13 +377,16 @@ if data_loaded:
             with st.container(border=True):
                 # Build Plotly Choropleth Map using GeoJSON
                 # Sophisticated light-theme Navy/Royal Blue sequential heat scale
+                # ⚠️ 0 occurrences will map exactly to #cbd5e1 (distinct slate grey)
+                # Any values above 0 will map dynamically to sequential blue gradients
                 custom_navy_scale = [
-                    [0.0, "#f8fafc"],  # Clean off-white matching page bg
-                    [0.15, "#dbeafe"], # Very light blue accent
-                    [0.4, "#93c5fd"],  # Soft sky blue
-                    [0.65, "#3b82f6"], # Vibrant royal blue
-                    [0.85, "#1d4ed8"], # Rich deep blue
-                    [1.0, "#1e3a8a"]   # Premium deep navy highlight
+                    [0.0, "#cbd5e1"],      # Beautiful slate-grey for exactly 0 occurrences
+                    [0.00001, "#f8fafc"],  # Clean off-white matching page background
+                    [0.15, "#dbeafe"],     # Very light blue accent
+                    [0.4, "#93c5fd"],      # Soft sky blue
+                    [0.65, "#3b82f6"],     # Vibrant royal blue
+                    [0.85, "#1d4ed8"],     # Rich deep blue
+                    [1.0, "#1e3a8a"]       # Premium deep navy highlight
                 ]
                 
                 fig_map = px.choropleth(
@@ -309,7 +396,7 @@ if data_loaded:
                     featureidkey="properties.Propinsi",
                     color="total_kejadian",
                     color_continuous_scale=custom_navy_scale,
-                    range_color=[0, df_province_summary['total_kejadian'].max()],
+                    range_color=[0, max(1, df_province_summary['total_kejadian'].max())],
                     hover_data=["Propinsi", "total_area_km2"]
                 )
                 
@@ -426,9 +513,14 @@ if data_loaded:
         with chart_col2:
             st.markdown("### 📈 Tren Kejadian Banjir Tahunan")
             
-            # Calculate yearly aggregate for selected filters
+            # For the line chart, we always want to show the full trend (2000-2025)
+            # for the selected provinces so the user has historical context!
+            df_line_filtered = df_prov_annual
+            if selected_provinces:
+                df_line_filtered = df_line_filtered[df_line_filtered['Propinsi'].isin(selected_provinces)]
+                
             df_yearly_trend = (
-                df_filtered.groupby('year')
+                df_line_filtered.groupby('year')
                 .agg(total_kejadian=('frekuensi_banjir', 'sum'))
                 .reset_index()
                 .sort_values('year')
@@ -466,6 +558,18 @@ if data_loaded:
                         )
                     )
                     
+                    # If in animation mode, add an elegant vertical dashed line indicating the active year
+                    if st.session_state.timeline_mode == "Animasi Kronologis":
+                        fig_line.add_vline(
+                            x=st.session_state.active_year,
+                            line_width=2,
+                            line_dash="dash",
+                            line_color="#1e3a8a",
+                            annotation_text=f"Tahun {st.session_state.active_year}",
+                            annotation_position="top left",
+                            annotation_font=dict(color="#1e3a8a", size=11, family="Inter")
+                        )
+                    
                     fig_line.update_layout(
                         paper_bgcolor="#ffffff",
                         plot_bgcolor="#ffffff",
@@ -476,7 +580,7 @@ if data_loaded:
                             title_font=dict(color="#475569", size=12),
                             tickfont=dict(color="#475569"),
                             gridcolor="#f1f5f9",
-                            dtick=2 if (end_year - start_year) > 10 else 1
+                            dtick=2 if (end_year - start_year) > 10 or st.session_state.timeline_mode == "Animasi Kronologis" else 1
                         ),
                         yaxis=dict(
                             title="Frekuensi Kejadian",
@@ -489,6 +593,15 @@ if data_loaded:
                     st.plotly_chart(fig_line, use_container_width=True)
             else:
                 st.info("Tidak ada data untuk diagram garis tren.")
+                
+        # Handle animation playback rerun
+        if st.session_state.is_playing and st.session_state.timeline_mode == "Animasi Kronologis":
+            import time
+            time.sleep(0.7)  # Dynamic, fluid frame transitions
+            st.session_state.active_year += 1
+            if st.session_state.active_year > 2025:
+                st.session_state.active_year = 2000  # Seamless wrap-around
+            st.rerun()
 
     # Render dynamic fragment
     render_dashboard()
