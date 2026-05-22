@@ -124,6 +124,28 @@ st.markdown("""
         letter-spacing: 0.5px;
     }
     
+    /* Fix multiselect dropdown: force white background and dark text */
+    [data-baseweb="select"] > div:first-child {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+    }
+    [data-baseweb="select"] span,
+    [data-baseweb="select"] input,
+    [data-baseweb="select"] input::placeholder {
+        color: #475569 !important;
+    }
+    [data-baseweb="popover"] {
+        background-color: #ffffff !important;
+    }
+    [data-baseweb="menu"] li {
+        color: #0f172a !important;
+        background-color: #ffffff !important;
+    }
+    [data-baseweb="menu"] li:hover {
+        background-color: #f1f5f9 !important;
+    }
+
     /* Premium Styled Multiselect Pills */
     [data-baseweb="tag"] {
         background-color: rgba(37, 99, 235, 0.08) !important;
@@ -139,35 +161,70 @@ st.markdown("""
     [data-baseweb="tag"] svg {
         fill: #1e3a8a !important;
     }
-
-    /* Streamlit Radio Override - Ensure high contrast dark navy text on white background */
-    div[data-testid="stRadio"] label p {
-        color: #1e3a8a !important;
-        font-weight: 600 !important;
-        font-size: 0.95rem !important;
-    }
     
-    /* Premium Styled Timeline Control Buttons */
-    div.stButton > button {
+    /* Premium Styled Buttons — use higher specificity chain to beat Streamlit defaults */
+    .stApp div.stButton > button,
+    .stApp div.stButton > button:focus,
+    .stApp div.stButton > button:focus-visible {
         background-color: #ffffff !important;
         color: #1e3a8a !important;
-        border: 1px solid #dbeafe !important;
+        border: 1.5px solid #bfdbfe !important;
         border-radius: 8px !important;
         font-weight: 700 !important;
         font-family: 'Inter', sans-serif !important;
-        padding: 6px 12px !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+        transition: all 0.2s ease !important;
     }
-    div.stButton > button:hover {
-        background-color: rgba(37, 99, 235, 0.08) !important;
+    .stApp div.stButton > button:hover {
+        background-color: #eff6ff !important;
         border-color: #3b82f6 !important;
         color: #1d4ed8 !important;
+        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.12) !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1) !important;
     }
-    div.stButton > button:active {
-        transform: translateY(0px) !important;
+    .stApp div.stButton > button:active {
+        transform: translateY(0) !important;
+        background-color: #dbeafe !important;
+    }
+
+    /* Active tab button (mode selector) */
+    .stApp div.stButton > button.tab-active {
+        background-color: #1e3a8a !important;
+        color: #ffffff !important;
+        border-color: #1e3a8a !important;
+    }
+
+    /* Custom mode-toggle pill buttons */
+    .mode-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: 1.5px solid #bfdbfe;
+        background-color: #ffffff;
+        color: #1e3a8a;
+        margin-right: 8px;
+        transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif;
+        text-decoration: none;
+    }
+    .mode-tab.active {
+        background-color: #1e3a8a;
+        color: #ffffff;
+        border-color: #1e3a8a;
+    }
+    .mode-tab:hover {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+        color: #1d4ed8;
+    }
+    .mode-tab.active:hover {
+        background-color: #1d4ed8;
+        color: #ffffff;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -239,20 +296,32 @@ if data_loaded:
         provinces_available = sorted(list(df_prov_annual['Propinsi'].unique()))
         
         with filter_col1:
-            st.markdown('<p style="font-weight: 600; margin-bottom: 4px; color: #475569;">📅 Mode Analisis Waktu</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Mode Analisis Waktu</p>', unsafe_allow_html=True)
             
-            # Interactive toggle for selection mode
-            timeline_mode = st.radio(
-                "Mode Waktu",
-                options=["📅 Rentang Tahun (Statik)", "🎬 Animasi Kronologis (Play)"],
-                index=0 if st.session_state.timeline_mode == "Rentang Tahun" else 1,
-                horizontal=True,
-                label_visibility="collapsed"
-            )
-            
-            if "Rentang Tahun" in timeline_mode:
-                st.session_state.timeline_mode = "Rentang Tahun"
-                st.session_state.is_playing = False # Auto pause when switching back to range mode
+            # Use two buttons side-by-side as tab toggles — fully CSS-controllable unlike st.radio
+            tab_c1, tab_c2, _ = st.columns([1.6, 2.1, 2.3])
+            with tab_c1:
+                if st.button(
+                    "📅 Rentang" if st.session_state.timeline_mode != "Rentang Tahun" else "✅ Rentang",
+                    use_container_width=True,
+                    key="tab_range",
+                    help="Mode rentang tahun statis"
+                ):
+                    st.session_state.timeline_mode = "Rentang Tahun"
+                    st.session_state.is_playing = False
+                    st.rerun()
+            with tab_c2:
+                if st.button(
+                    "✅ Animasi (Play)" if st.session_state.timeline_mode == "Animasi Kronologis" else "🎬 Animasi (Play)",
+                    use_container_width=True,
+                    key="tab_anim",
+                    help="Mode animasi kronologis"
+                ):
+                    st.session_state.timeline_mode = "Animasi Kronologis"
+                    st.rerun()
+
+            if st.session_state.timeline_mode == "Rentang Tahun":
+                st.session_state.is_playing = False
                 year_range = st.slider(
                     "Pilih Rentang Tahun",
                     min_value=2000,
@@ -262,9 +331,7 @@ if data_loaded:
                 )
                 start_year, end_year = year_range
             else:
-                st.session_state.timeline_mode = "Animasi Kronologis"
-                # Animasi Kronologis Mode
-                # Display single year slider linked to active_year
+                # Animasi Kronologis Mode — single year slider
                 active_year = st.slider(
                     "Pilih Tahun",
                     min_value=2000,
@@ -276,36 +343,31 @@ if data_loaded:
                 start_year = st.session_state.active_year
                 end_year = st.session_state.active_year
                 
-                # Playback buttons row layout
-                btn_col1, btn_col2, btn_col3, btn_col4 = st.columns([1.2, 1.2, 1.2, 2.4])
+                # Playback buttons row
+                btn_col1, btn_col2, btn_col3, btn_col4 = st.columns([1.3, 1.5, 1.3, 2.9])
                 
                 with btn_col1:
-                    if st.button("⏪ Mundur", use_container_width=True, help="Tahun Sebelumnya"):
-                        st.session_state.is_playing = False # Pause on manual click
-                        st.session_state.active_year -= 1
-                        if st.session_state.active_year < 2000:
-                            st.session_state.active_year = 2025
+                    if st.button("⏪ Mundur", use_container_width=True, key="btn_back"):
+                        st.session_state.is_playing = False
+                        st.session_state.active_year = max(2000, st.session_state.active_year - 1) if st.session_state.active_year > 2000 else 2025
                         st.rerun()
                 
                 with btn_col2:
                     play_label = "⏸️ Pause" if st.session_state.is_playing else "▶️ Play"
-                    play_help = "Pause Animasi" if st.session_state.is_playing else "Putar Animasi"
-                    if st.button(play_label, use_container_width=True, help=play_help):
+                    if st.button(play_label, use_container_width=True, key="btn_play"):
                         st.session_state.is_playing = not st.session_state.is_playing
                         st.rerun()
                         
                 with btn_col3:
-                    if st.button("Maju ⏩", use_container_width=True, help="Tahun Berikutnya"):
-                        st.session_state.is_playing = False # Pause on manual click
-                        st.session_state.active_year += 1
-                        if st.session_state.active_year > 2025:
-                            st.session_state.active_year = 2000
+                    if st.button("Maju ⏩", use_container_width=True, key="btn_fwd"):
+                        st.session_state.is_playing = False
+                        st.session_state.active_year = st.session_state.active_year + 1 if st.session_state.active_year < 2025 else 2000
                         st.rerun()
                         
                 with btn_col4:
                     st.markdown(f"""
-                        <div style="font-weight: 700; font-size: 1.1rem; color: #1e3a8a; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.15); padding: 5px 12px; border-radius: 8px; text-align: center;">
-                            Tahun Aktif: {st.session_state.active_year}
+                        <div style="font-weight: 700; font-size: 1rem; color: #1e3a8a; background: rgba(37, 99, 235, 0.07); border: 1.5px solid rgba(37, 99, 235, 0.2); padding: 7px 12px; border-radius: 8px; text-align: center; margin-top: 2px;">
+                            📅 Tahun: <span style="font-size:1.15rem;">{st.session_state.active_year}</span>
                         </div>
                     """, unsafe_allow_html=True)
             
