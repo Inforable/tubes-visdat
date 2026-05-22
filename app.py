@@ -317,42 +317,20 @@ if data_loaded:
         with filter_col1:
             st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Mode Analisis Waktu</p>', unsafe_allow_html=True)
             
-            # Use two buttons side-by-side as a segmented tab control.
-            # Inject a scoped <style> that highlights the ACTIVE button with a navy fill,
-            # and leaves the inactive one as a ghost button — no emojis needed.
-            is_range_active = st.session_state.timeline_mode == "Rentang Tahun"
-            active_nth = "1" if is_range_active else "2"
-            st.markdown(f"""
-                <style>
-                div[data-testid="stHorizontalBlock"] div[data-testid="stButton"]:nth-child({active_nth}) > button {{
-                    background-color: #1e3a8a !important;
-                    color: #ffffff !important;
-                    border-color: #1e3a8a !important;
-                    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.25) !important;
-                }}
-                </style>
-            """, unsafe_allow_html=True)
-
-            tab_c1, tab_c2, _ = st.columns([1.6, 2.1, 2.3])
-            with tab_c1:
-                if st.button(
-                    "Rentang Tahun",
-                    use_container_width=True,
-                    key="tab_range",
-                    help="Mode rentang tahun statis"
-                ):
-                    st.session_state.timeline_mode = "Rentang Tahun"
+            mode_options = ["Rentang Tahun", "Animasi (Play)"]
+            selected_mode = st.segmented_control(
+                "Mode",
+                options=mode_options,
+                default=st.session_state.timeline_mode if st.session_state.timeline_mode in mode_options else "Rentang Tahun",
+                label_visibility="collapsed",
+                key="mode_segmented"
+            )
+            if selected_mode and selected_mode != st.session_state.timeline_mode:
+                st.session_state.timeline_mode = selected_mode
+                if selected_mode == "Rentang Tahun":
                     st.session_state.is_playing = False
-                    st.rerun()
-            with tab_c2:
-                if st.button(
-                    "Animasi (Play)",
-                    use_container_width=True,
-                    key="tab_anim",
-                    help="Mode animasi kronologis"
-                ):
-                    st.session_state.timeline_mode = "Animasi Kronologis"
-                    st.rerun()
+                st.rerun()
+
 
             if st.session_state.timeline_mode == "Rentang Tahun":
                 st.session_state.is_playing = False
@@ -685,7 +663,7 @@ if data_loaded:
                     )
                     
                     # If in animation mode, add an elegant vertical dashed line indicating the active year
-                    if st.session_state.timeline_mode == "Animasi Kronologis":
+                    if st.session_state.timeline_mode == "Animasi (Play)":
                         fig_line.add_vline(
                             x=st.session_state.active_year,
                             line_width=2,
@@ -706,7 +684,7 @@ if data_loaded:
                             title_font=dict(color="#475569", size=12),
                             tickfont=dict(color="#475569"),
                             gridcolor="#f1f5f9",
-                            dtick=2 if (end_year - start_year) > 10 or st.session_state.timeline_mode == "Animasi Kronologis" else 1
+                            dtick=2 if (end_year - start_year) > 10 or st.session_state.timeline_mode == "Animasi (Play)" else 1
                         ),
                         yaxis=dict(
                             title="Frekuensi Kejadian",
@@ -721,7 +699,7 @@ if data_loaded:
                 st.info("Tidak ada data untuk diagram garis tren.")
                 
         # Handle animation playback rerun
-        if st.session_state.is_playing and st.session_state.timeline_mode == "Animasi Kronologis":
+        if st.session_state.is_playing and st.session_state.timeline_mode == "Animasi (Play)":
             import time
             time.sleep(0.7)  # Dynamic, fluid frame transitions
             st.session_state.active_year += 1
