@@ -26,15 +26,16 @@ st.markdown("""
     
     /* Header & Branding Banner */
     .branding-banner {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        border-bottom: 3px solid #2563eb;
+        background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+        border: 1px solid #e2e8f0;
+        border-left: 5px solid #1e3a8a;
         padding: 24px;
         border-radius: 12px;
         margin-bottom: 24px;
-        box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.15), 0 4px 6px -4px rgba(15, 23, 42, 0.15);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     }
     .branding-title {
-        color: #ffffff;
+        color: #1e3a8a !important;
         font-size: 2.3rem;
         font-weight: 800;
         letter-spacing: -0.5px;
@@ -43,7 +44,7 @@ st.markdown("""
         text-transform: uppercase;
     }
     .branding-subtitle {
-        color: #94a3b8;
+        color: #475569 !important;
         font-size: 1.1rem;
         margin-top: 4px;
         font-weight: 400;
@@ -163,10 +164,10 @@ if data_loaded:
         # ==============================================================================
         st.markdown(f"""
             <div class="branding-banner">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div>
-                        <h1 class="branding-title">Total Kejadian Banjir di Indonesia</h1>
-                        <p class="branding-subtitle">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</p>
+                        <h1 class="branding-title" style="color: #1e3a8a !important; margin: 0; padding: 0;">Total Kejadian Banjir di Indonesia</h1>
+                        <p class="branding-subtitle" style="color: #475569 !important; margin: 4px 0 0 0;">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</p>
                     </div>
                     <div style="font-weight: 700; color: #1e3a8a; font-size: 1.1rem; border: 1px solid rgba(30, 58, 138, 0.25); padding: 6px 16px; border-radius: 20px; background: rgba(30, 58, 138, 0.05);">
                         IF4061 - VISUALISASI DATA
