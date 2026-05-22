@@ -1,6 +1,25 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import base64
+
+# ==============================================================================
+# SVG ICON HELPER
+# ==============================================================================
+_SVG_CACHE: dict = {}
+
+def svg(name: str, size: int = 18, color: str = "#1e3a8a") -> str:
+    """Load an SVG from assets/, recolor it, and return an inline <img> tag."""
+    path = f"assets/{name}_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg"
+    if path not in _SVG_CACHE:
+        try:
+            with open(path, "r") as f:
+                _SVG_CACHE[path] = f.read()
+        except FileNotFoundError:
+            return ""
+    content = _SVG_CACHE[path].replace('fill="#000000"', f'fill="{color}"')
+    b64 = base64.b64encode(content.encode()).decode()
+    return f'<img src="data:image/svg+xml;base64,{b64}" width="{size}" height="{size}" style="vertical-align:middle; display:inline-block; margin-right:4px;"/>'
 
 # ==============================================================================
 # 1. PAGE INITIALIZATION & CONFIGURATION
@@ -290,7 +309,7 @@ if data_loaded:
         if 'timeline_mode' not in st.session_state:
             st.session_state.timeline_mode = "Rentang Tahun"
 
-        st.markdown('<p class="filter-header" style="margin-bottom: 8px;">🔍 Panel Filter Analisis</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="filter-header" style="margin-bottom: 8px;">{svg("search", 18, "#1e3a8a")} Panel Filter Analisis</p>', unsafe_allow_html=True)
         filter_col1, filter_col2 = st.columns([1, 1])
         
         provinces_available = sorted(list(df_prov_annual['Propinsi'].unique()))
@@ -302,7 +321,7 @@ if data_loaded:
             tab_c1, tab_c2, _ = st.columns([1.6, 2.1, 2.3])
             with tab_c1:
                 if st.button(
-                    "📅 Rentang" if st.session_state.timeline_mode != "Rentang Tahun" else "✅ Rentang",
+                    "✅ Rentang" if st.session_state.timeline_mode == "Rentang Tahun" else "Rentang",
                     use_container_width=True,
                     key="tab_range",
                     help="Mode rentang tahun statis"
@@ -312,7 +331,7 @@ if data_loaded:
                     st.rerun()
             with tab_c2:
                 if st.button(
-                    "✅ Animasi (Play)" if st.session_state.timeline_mode == "Animasi Kronologis" else "🎬 Animasi (Play)",
+                    "✅ Animasi (Play)" if st.session_state.timeline_mode == "Animasi Kronologis" else "Animasi (Play)",
                     use_container_width=True,
                     key="tab_anim",
                     help="Mode animasi kronologis"
@@ -347,19 +366,19 @@ if data_loaded:
                 btn_col1, btn_col2, btn_col3, btn_col4 = st.columns([1.3, 1.5, 1.3, 2.9])
                 
                 with btn_col1:
-                    if st.button("⏪ Mundur", use_container_width=True, key="btn_back"):
+                    if st.button("« Mundur", use_container_width=True, key="btn_back"):
                         st.session_state.is_playing = False
                         st.session_state.active_year = max(2000, st.session_state.active_year - 1) if st.session_state.active_year > 2000 else 2025
                         st.rerun()
                 
                 with btn_col2:
-                    play_label = "⏸️ Pause" if st.session_state.is_playing else "▶️ Play"
+                    play_label = "Pause" if st.session_state.is_playing else "Play"
                     if st.button(play_label, use_container_width=True, key="btn_play"):
                         st.session_state.is_playing = not st.session_state.is_playing
                         st.rerun()
                         
                 with btn_col3:
-                    if st.button("Maju ⏩", use_container_width=True, key="btn_fwd"):
+                    if st.button("Maju »", use_container_width=True, key="btn_fwd"):
                         st.session_state.is_playing = False
                         st.session_state.active_year = st.session_state.active_year + 1 if st.session_state.active_year < 2025 else 2000
                         st.rerun()
@@ -367,7 +386,7 @@ if data_loaded:
                 with btn_col4:
                     st.markdown(f"""
                         <div style="font-weight: 700; font-size: 1rem; color: #1e3a8a; background: rgba(37, 99, 235, 0.07); border: 1.5px solid rgba(37, 99, 235, 0.2); padding: 7px 12px; border-radius: 8px; text-align: center; margin-top: 2px;">
-                            📅 Tahun: <span style="font-size:1.15rem;">{st.session_state.active_year}</span>
+                            {svg("calendar_month", 16, "#1e3a8a")} Tahun: <span style="font-size:1.15rem;">{st.session_state.active_year}</span>
                         </div>
                     """, unsafe_allow_html=True)
             
@@ -438,7 +457,7 @@ if data_loaded:
         with kpi_col1:
             st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-label">🌊 Total Kejadian Banjir</div>
+                    <div class="metric-label">{svg('waves', 16, '#64748b')} Total Kejadian Banjir</div>
                     <div class="metric-value">{total_events:,}</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -446,7 +465,7 @@ if data_loaded:
         with kpi_col2:
             st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-label">🗺️ Provinsi Terdampak</div>
+                    <div class="metric-label">{svg('map_search', 16, '#64748b')} Provinsi Terdampak</div>
                     <div class="metric-value">{affected_prov_count}</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -454,7 +473,7 @@ if data_loaded:
         with kpi_col3:
             st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-label">🚩 Kasus Terbanyak ({max_prov_name})</div>
+                    <div class="metric-label">{svg('flag', 16, '#64748b')} Kasus Terbanyak ({max_prov_name})</div>
                     <div class="metric-value">{max_prov_val:,}</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -541,7 +560,7 @@ if data_loaded:
         chart_col1, chart_col2 = st.columns(2)
         
         with chart_col1:
-            st.markdown("### 📊 Top 10 Provinsi Kasus Terbanyak")
+            st.markdown(f"### {svg('analytics', 20, '#1e3a8a')} Top 10 Provinsi Kasus Terbanyak", unsafe_allow_html=True)
             
             if len(df_province_summary) > 0:
                 with st.container(border=True):
@@ -603,7 +622,7 @@ if data_loaded:
                 st.info("Tidak ada data untuk diagram batang.")
                 
         with chart_col2:
-            st.markdown("### 📈 Tren Kejadian Banjir Tahunan")
+            st.markdown(f"### {svg('chart_data', 20, '#1e3a8a')} Tren Kejadian Banjir Tahunan", unsafe_allow_html=True)
             
             # For the line chart, we always want to show the full trend (2000-2025)
             # for the selected provinces so the user has historical context!
@@ -701,10 +720,10 @@ if data_loaded:
     # ==============================================================================
     # 9. GLASSMORPHIC INSIGHTS & TAKEAWAYS SECTION (BOTTOM)
     # ==============================================================================
-    st.markdown("""
+    st.markdown(f"""
         <div class="takeaways-box">
             <div class="takeaways-title">
-                <span>💡 Informasi Kunci & Wawasan Data</span>
+                <span>{svg('lightbulb', 22, '#1e3a8a')} Informasi Kunci &amp; Wawasan Data</span>
             </div>
             <div class="takeaway-bullet">
                 • <strong>Total Beban Risiko:</strong> Dampak kebencanaan banjir di Indonesia tergolong sangat masif dengan ratusan ribu kejadian terdistribusi di berbagai pulau. Skala kejadian yang tinggi dan berulang ini menandakan adanya kerentanan lingkungan yang terstruktur dan konsisten, bukan sekadar anomali cuaca sporadis.
