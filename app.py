@@ -206,44 +206,37 @@ st.markdown("""
         background-color: #dbeafe !important;
     }
 
-    /* Active tab button (mode selector) */
-    .stApp div.stButton > button.tab-active {
+    /* Premium Styled Segmented Control (Pills) */
+    div[data-testid="stSegmentedControl"] {
+        gap: 8px !important;
+    }
+    div[data-testid="stSegmentedControl"] button {
+        background-color: #ffffff !important;
+        color: #1e3a8a !important;
+        border: 1.5px solid #bfdbfe !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-family: 'Inter', sans-serif !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+        transition: all 0.2s ease !important;
+        padding: 6px 16px !important;
+    }
+    div[data-testid="stSegmentedControl"] button:hover {
+        background-color: #eff6ff !important;
+        border-color: #3b82f6 !important;
+        color: #1d4ed8 !important;
+        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.12) !important;
+    }
+    div[data-testid="stSegmentedControl"] button[aria-checked="true"] {
         background-color: #1e3a8a !important;
         color: #ffffff !important;
         border-color: #1e3a8a !important;
+        box-shadow: 0 4px 10px rgba(30, 58, 138, 0.25) !important;
     }
-
-    /* Custom mode-toggle pill buttons */
-    .mode-tab {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        cursor: pointer;
-        border: 1.5px solid #bfdbfe;
-        background-color: #ffffff;
-        color: #1e3a8a;
-        margin-right: 8px;
-        transition: all 0.2s ease;
-        font-family: 'Inter', sans-serif;
-        text-decoration: none;
-    }
-    .mode-tab.active {
-        background-color: #1e3a8a;
-        color: #ffffff;
-        border-color: #1e3a8a;
-    }
-    .mode-tab:hover {
-        border-color: #3b82f6;
-        background-color: #eff6ff;
-        color: #1d4ed8;
-    }
-    .mode-tab.active:hover {
-        background-color: #1d4ed8;
-        color: #ffffff;
+    div[data-testid="stSegmentedControl"] button[aria-checked="true"]:hover {
+        background-color: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+        color: #ffffff !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -325,12 +318,16 @@ if data_loaded:
                 label_visibility="collapsed",
                 key="mode_segmented"
             )
-            if selected_mode and selected_mode != st.session_state.timeline_mode:
+            
+            # Defensive handling: prevent deselection from returning None
+            if selected_mode is None:
+                selected_mode = st.session_state.timeline_mode
+                
+            if selected_mode != st.session_state.timeline_mode:
                 st.session_state.timeline_mode = selected_mode
                 if selected_mode == "Rentang Tahun":
                     st.session_state.is_playing = False
                 st.rerun()
-
 
             if st.session_state.timeline_mode == "Rentang Tahun":
                 st.session_state.is_playing = False
@@ -365,9 +362,12 @@ if data_loaded:
                         st.rerun()
                 
                 with btn_col2:
-                    play_label = "Pause" if st.session_state.is_playing else "Play"
-                    if st.button(play_label, use_container_width=True, key="btn_play"):
-                        st.session_state.is_playing = not st.session_state.is_playing
+                    is_playing = st.session_state.is_playing
+                    play_label = "Pause" if is_playing else "Play"
+                    # Conditionally style active state using Streamlit's primary theme color
+                    play_type = "primary" if is_playing else "secondary"
+                    if st.button(play_label, type=play_type, use_container_width=True, key="btn_play"):
+                        st.session_state.is_playing = not is_playing
                         st.rerun()
                         
                 with btn_col3:
@@ -475,7 +475,8 @@ if data_loaded:
 
         # ==============================================================================
         # 7. INTERACTIVE GEOSPATIAL MAP (MIDDLE SECTION)
-        # ==========================================================        st.markdown("### 🗺️ Peta Distribusi Kejadian Banjir Regional")
+        # ==============================================================================
+        st.markdown(f"### {svg('map_search', 20, '#1e3a8a')} Peta Distribusi Kejadian Banjir Regional", unsafe_allow_html=True)
         
         if len(df_province_summary) > 0:
             with st.container(border=True):
@@ -528,9 +529,9 @@ if data_loaded:
                 
                 # Polish the on-province-hover popup tooltip to match our premium navy theme
                 fig_map.update_traces(
-                    hovertemplate="<b>📍 %{customdata[0]}</b><br>" +
-                                  "🌊 Kejadian: <b>%{z:,}</b> kasus<br>" +
-                                  "📐 Luas Area: <b>%{customdata[1]:,.1f}</b> km²<extra></extra>",
+                    hovertemplate="<span style='font-size: 14px; font-weight: bold; color: #3b82f6;'>%{customdata[0]}</span><br><br>" +
+                                  "Total Kejadian: <b>%{z:,}</b> kasus<br>" +
+                                  "Luas Area Banjir: <b>%{customdata[1]:,.1f}</b> km²<extra></extra>",
                     hoverlabel=dict(
                         bgcolor="#0f172a",
                         bordercolor="#3b82f6",
@@ -581,8 +582,8 @@ if data_loaded:
                         marker_line_color='#1e3a8a',
                         marker_line_width=1.5,
                         opacity=0.9,
-                        hovertemplate="<b>📍 %{y}</b><br>" +
-                                      "🌊 Kejadian: <b>%{x:,}</b> kasus<extra></extra>",
+                        hovertemplate="<span style='font-size: 14px; font-weight: bold; color: #3b82f6;'>%{y}</span><br><br>" +
+                                      "Total Kejadian: <b>%{x:,}</b> kasus<extra></extra>",
                         hoverlabel=dict(
                             bgcolor="#0f172a",
                             bordercolor="#3b82f6",
@@ -650,8 +651,8 @@ if data_loaded:
                         marker=dict(color='#1e3a8a', size=7, line=dict(color='#ffffff', width=1.5)),
                         fill='tozeroy',
                         fillcolor='rgba(37, 99, 235, 0.06)',
-                        hovertemplate="<b>📅 Tahun %{x}</b><br>" +
-                                      "🌊 Kejadian: <b>%{y:,}</b> kasus<extra></extra>",
+                        hovertemplate="<span style='font-size: 14px; font-weight: bold; color: #3b82f6;'>Tahun %{x}</span><br><br>" +
+                                      "Total Kejadian: <b>%{y:,}</b> kasus<extra></extra>",
                         hoverlabel=dict(
                             bgcolor="#0f172a",
                             bordercolor="#3b82f6",
