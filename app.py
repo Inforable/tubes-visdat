@@ -123,6 +123,22 @@ st.markdown("""
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
+    
+    /* Premium Styled Multiselect Pills */
+    [data-baseweb="tag"] {
+        background-color: rgba(37, 99, 235, 0.08) !important;
+        border: 1px solid rgba(37, 99, 235, 0.25) !important;
+        border-radius: 6px !important;
+        padding: 2px 6px !important;
+    }
+    [data-baseweb="tag"] span {
+        color: #1e3a8a !important;
+        font-weight: 600 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    [data-baseweb="tag"] svg {
+        fill: #1e3a8a !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -197,7 +213,7 @@ if data_loaded:
             # Province Selector (Multi-select)
             provinces_available = sorted(list(df_prov_annual['Propinsi'].unique()))
             selected_provinces = st.multiselect(
-                "Pilih Wilayah/Provinsi",
+                "Pilih Provinsi",
                 options=provinces_available,
                 default=[],
                 help="Biarkan kosong untuk menampilkan semua provinsi secara regional."
@@ -324,6 +340,17 @@ if data_loaded:
                         title="Kejadian",
                         title_font_color="#475569",
                         tickfont_color="#475569"
+                    )
+                )
+                
+                # Polish the on-province-hover popup tooltip to match our premium navy theme
+                fig_map.update_traces(
+                    hoverlabel=dict(
+                        bgcolor="#0f172a",
+                        font_size=13,
+                        font_family="Inter, Roboto, sans-serif",
+                        font_color="#ffffff",
+                        bordercolor="#2563eb"
                     )
                 )
                 
