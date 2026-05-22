@@ -9,7 +9,7 @@ st.set_page_config(
     page_title="Visualisasi Banjir Indonesia",
     page_icon="🌊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # ==============================================================================
@@ -160,29 +160,52 @@ except Exception as e:
 if data_loaded:
     @st.fragment
     def render_dashboard():
-        st.sidebar.markdown('<p class="filter-header">🔍 Filter Analisis</p>', unsafe_allow_html=True)
+        # ==============================================================================
+        # A. BRANDING HEADER
+        # ==============================================================================
+        st.markdown(f"""
+            <div class="branding-banner">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <h1 class="branding-title">Total Kejadian Banjir di Indonesia</h1>
+                        <p class="branding-subtitle">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</p>
+                    </div>
+                    <div style="font-weight: 700; color: #ff5e14; font-size: 1.1rem; border: 1px solid #ff5e1444; padding: 6px 16px; border-radius: 20px; background: rgba(255, 94, 20, 0.05);">
+                        IF4061 - VISUALISASI DATA
+                    </div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # ==============================================================================
+        # B. DYNAMIC HORIZONTAL FILTER PANEL (MAIN PAGE)
+        # ==============================================================================
+        st.markdown('<p class="filter-header" style="margin-bottom: 8px;">🔍 Panel Filter Analisis</p>', unsafe_allow_html=True)
+        filter_col1, filter_col2 = st.columns([1, 1])
         
-        # Year Range Slider (2000 - 2025)
-        year_range = st.sidebar.slider(
-            "Pilih Rentang Tahun",
-            min_value=2000,
-            max_value=2025,
-            value=(2000, 2025),
-            step=1
-        )
-        start_year, end_year = year_range
-        
-        # Province Selector (Multi-select)
-        provinces_available = sorted(list(df_prov_annual['Propinsi'].unique()))
-        selected_provinces = st.sidebar.multiselect(
-            "Pilih Wilayah/Provinsi",
-            options=provinces_available,
-            default=[],
-            help="Biarkan kosong untuk menampilkan semua provinsi secara regional."
-        )
+        with filter_col1:
+            # Year Range Slider (2000 - 2025)
+            year_range = st.slider(
+                "Pilih Rentang Tahun",
+                min_value=2000,
+                max_value=2025,
+                value=(2000, 2025),
+                step=1
+            )
+            start_year, end_year = year_range
+            
+        with filter_col2:
+            # Province Selector (Multi-select)
+            provinces_available = sorted(list(df_prov_annual['Propinsi'].unique()))
+            selected_provinces = st.multiselect(
+                "Pilih Wilayah/Provinsi",
+                options=provinces_available,
+                default=[],
+                help="Biarkan kosong untuk menampilkan semua provinsi secara regional."
+            )
         
         # ==============================================================================
-        # 5. DATA FILTERING ENGINE
+        # C. DATA FILTERING ENGINE
         # ==============================================================================
         # Filter by selected Year range
         df_filtered = df_prov_annual[
@@ -204,24 +227,6 @@ if data_loaded:
             )
             .reset_index()
         )
-        
-        # ==============================================================================
-        # 6. HEADER & KPI METRICS SECTION
-        # ==============================================================================
-        # Premium Header Banner
-        st.markdown(f"""
-            <div class="branding-banner">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                    <div>
-                        <h1 class="branding-title">Total Kejadian Banjir di Indonesia</h1>
-                        <p class="branding-subtitle">Visualisasi Data Interaktif Kejadian Banjir • Rentang {start_year} - {end_year}</p>
-                    </div>
-                    <div style="font-weight: 700; color: #ff5e14; font-size: 1.1rem; border: 1px solid #ff5e1444; padding: 6px 16px; border-radius: 20px; background: rgba(255, 94, 20, 0.05);">
-                        IF4061 - VISUALISASI DATA
-                    </div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
         
         # Compute dynamic values for KPI Metrics
         total_events = df_province_summary['total_kejadian'].sum()
