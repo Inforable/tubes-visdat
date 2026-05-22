@@ -410,7 +410,7 @@ if data_loaded:
                         ),
                         yaxis=dict(
                             title="",
-                            tickfont=dict(color="#0f172a", font_weight="bold")
+                            tickfont=dict(color="#0f172a", weight="bold")
                         )
                     )
                     
