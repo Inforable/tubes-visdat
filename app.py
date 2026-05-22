@@ -310,16 +310,7 @@ if data_loaded:
                     color="total_kejadian",
                     color_continuous_scale=custom_navy_scale,
                     range_color=[0, df_province_summary['total_kejadian'].max()],
-                    labels={
-                        "total_kejadian": "Jumlah Kejadian",
-                        "total_area_km2": "Total Area (km²)",
-                        "Propinsi": "Provinsi"
-                    },
-                    hover_data={
-                        "Propinsi": True,
-                        "total_kejadian": ":,",
-                        "total_area_km2": ":,.2f"
-                    }
+                    hover_data=["Propinsi", "total_area_km2"]
                 )
                 
                 # Manually frame the map to Indonesia's coordinates (longitudes 94°-142°E, latitudes -11° to 8°N)
@@ -346,12 +337,16 @@ if data_loaded:
                 
                 # Polish the on-province-hover popup tooltip to match our premium navy theme
                 fig_map.update_traces(
+                    hovertemplate="<b>📍 %{customdata[0]}</b><br>" +
+                                  "🌊 Kejadian: <b>%{z:,}</b> kasus<br>" +
+                                  "📐 Luas Area: <b>%{customdata[1]:,.1f}</b> km²<extra></extra>",
                     hoverlabel=dict(
                         bgcolor="#0f172a",
+                        bordercolor="#3b82f6",
                         font_size=13,
-                        font_family="Inter, Roboto, sans-serif",
+                        font_family="Inter, system-ui, -apple-system, sans-serif",
                         font_color="#ffffff",
-                        bordercolor="#2563eb"
+                        align="left"
                     )
                 )
                 
@@ -395,7 +390,16 @@ if data_loaded:
                         marker_line_color='#1e3a8a',
                         marker_line_width=1.5,
                         opacity=0.9,
-                        hoverlabel=dict(bgcolor="#0f172a", font_size=13, font_family="Inter", font_color="#ffffff")
+                        hovertemplate="<b>📍 %{y}</b><br>" +
+                                      "🌊 Kejadian: <b>%{x:,}</b> kasus<extra></extra>",
+                        hoverlabel=dict(
+                            bgcolor="#0f172a",
+                            bordercolor="#3b82f6",
+                            font_size=13,
+                            font_family="Inter, system-ui, -apple-system, sans-serif",
+                            font_color="#ffffff",
+                            align="left"
+                        )
                     )
                     
                     fig_bar.update_layout(
@@ -450,7 +454,16 @@ if data_loaded:
                         marker=dict(color='#1e3a8a', size=7, line=dict(color='#ffffff', width=1.5)),
                         fill='tozeroy',
                         fillcolor='rgba(37, 99, 235, 0.06)',
-                        hoverlabel=dict(bgcolor="#0f172a", font_size=13, font_family="Inter", font_color="#ffffff")
+                        hovertemplate="<b>📅 Tahun %{x}</b><br>" +
+                                      "🌊 Kejadian: <b>%{y:,}</b> kasus<extra></extra>",
+                        hoverlabel=dict(
+                            bgcolor="#0f172a",
+                            bordercolor="#3b82f6",
+                            font_size=13,
+                            font_family="Inter, system-ui, -apple-system, sans-serif",
+                            font_color="#ffffff",
+                            align="left"
+                        )
                     )
                     
                     fig_line.update_layout(
