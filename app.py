@@ -317,11 +317,26 @@ if data_loaded:
         with filter_col1:
             st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Mode Analisis Waktu</p>', unsafe_allow_html=True)
             
-            # Use two buttons side-by-side as tab toggles — fully CSS-controllable unlike st.radio
+            # Use two buttons side-by-side as a segmented tab control.
+            # Inject a scoped <style> that highlights the ACTIVE button with a navy fill,
+            # and leaves the inactive one as a ghost button — no emojis needed.
+            is_range_active = st.session_state.timeline_mode == "Rentang Tahun"
+            active_nth = "1" if is_range_active else "2"
+            st.markdown(f"""
+                <style>
+                div[data-testid="stHorizontalBlock"] div[data-testid="stButton"]:nth-child({active_nth}) > button {{
+                    background-color: #1e3a8a !important;
+                    color: #ffffff !important;
+                    border-color: #1e3a8a !important;
+                    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.25) !important;
+                }}
+                </style>
+            """, unsafe_allow_html=True)
+
             tab_c1, tab_c2, _ = st.columns([1.6, 2.1, 2.3])
             with tab_c1:
                 if st.button(
-                    "✅ Rentang" if st.session_state.timeline_mode == "Rentang Tahun" else "Rentang",
+                    "Rentang Tahun",
                     use_container_width=True,
                     key="tab_range",
                     help="Mode rentang tahun statis"
@@ -331,7 +346,7 @@ if data_loaded:
                     st.rerun()
             with tab_c2:
                 if st.button(
-                    "✅ Animasi (Play)" if st.session_state.timeline_mode == "Animasi Kronologis" else "Animasi (Play)",
+                    "Animasi (Play)",
                     use_container_width=True,
                     key="tab_anim",
                     help="Mode animasi kronologis"
