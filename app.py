@@ -139,6 +139,36 @@ st.markdown("""
     [data-baseweb="tag"] svg {
         fill: #1e3a8a !important;
     }
+
+    /* Streamlit Radio Override - Ensure high contrast dark navy text on white background */
+    div[data-testid="stRadio"] label p {
+        color: #1e3a8a !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+    }
+    
+    /* Premium Styled Timeline Control Buttons */
+    div.stButton > button {
+        background-color: #ffffff !important;
+        color: #1e3a8a !important;
+        border: 1px solid #dbeafe !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-family: 'Inter', sans-serif !important;
+        padding: 6px 12px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    div.stButton > button:hover {
+        background-color: rgba(37, 99, 235, 0.08) !important;
+        border-color: #3b82f6 !important;
+        color: #1d4ed8 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1) !important;
+    }
+    div.stButton > button:active {
+        transform: translateY(0px) !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -247,10 +277,10 @@ if data_loaded:
                 end_year = st.session_state.active_year
                 
                 # Playback buttons row layout
-                btn_col1, btn_col2, btn_col3, btn_col4 = st.columns([1.1, 1.1, 1.1, 2.7])
+                btn_col1, btn_col2, btn_col3, btn_col4 = st.columns([1.2, 1.2, 1.2, 2.4])
                 
                 with btn_col1:
-                    if st.button("◀️ Mundur", use_container_width=True, help="Tahun Sebelumnya"):
+                    if st.button("⏪ Mundur", use_container_width=True, help="Tahun Sebelumnya"):
                         st.session_state.is_playing = False # Pause on manual click
                         st.session_state.active_year -= 1
                         if st.session_state.active_year < 2000:
@@ -265,7 +295,7 @@ if data_loaded:
                         st.rerun()
                         
                 with btn_col3:
-                    if st.button("Maju ▶️", use_container_width=True, help="Tahun Berikutnya"):
+                    if st.button("Maju ⏩", use_container_width=True, help="Tahun Berikutnya"):
                         st.session_state.is_playing = False # Pause on manual click
                         st.session_state.active_year += 1
                         if st.session_state.active_year > 2025:
