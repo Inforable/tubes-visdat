@@ -216,6 +216,7 @@ if data_loaded:
                 "Pilih Provinsi",
                 options=provinces_available,
                 default=[],
+                placeholder="Pilih Provinsi",
                 help="Biarkan kosong untuk menampilkan semua provinsi secara regional."
             )
         
