@@ -58,8 +58,11 @@ def create_map(df_province_summary, geojson_data):
             y=-0.15,
             x=0.5,
             xanchor="center",
-            title="Tingkat Kejadian Banjir",
-            title_font=dict(color="#475569", size=10),
+            title=dict(
+                text="Tingkat Kejadian Banjir",
+                side="top",
+                font=dict(color="#475569", size=10)
+            ),
             tickfont=dict(color="#475569", size=9),
             thickness=10,
             len=0.7

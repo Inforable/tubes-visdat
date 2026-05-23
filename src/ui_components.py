@@ -95,6 +95,19 @@ LIGHT_CSS = """
         border-color: #3b82f6;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
     }
+    .metric-card-outline {
+        background-color: #ffffff;
+        border: 2px solid #2563eb !important;
+        border-radius: 10px;
+        padding: 12px 16px !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        text-align: left;
+    }
+    .metric-card-outline:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+    }
     .metric-label {
         font-size: 0.78rem !important;
         font-weight: 600;
@@ -215,6 +228,10 @@ LIGHT_CSS = """
         font-family: 'Inter', sans-serif !important;
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
         transition: all 0.2s ease !important;
+        padding: 4px 10px !important;
+        min-height: 32px !important;
+        height: 32px !important;
+        font-size: 0.9rem !important;
     }
     .stApp div.stButton > button:hover {
         background-color: #f8fafc !important;
@@ -301,10 +318,12 @@ def render_header(year_badge: str) -> str:
         </div>
     """
 
-def render_kpi_card(label: str, value: str, icon_name: str) -> str:
+def render_kpi_card(label: str, value: str, icon_name: str, outline: bool = False) -> str:
+    card_class = "metric-card-outline" if outline else "metric-card"
+    icon_color = "#2563eb" if outline else "#64748b"
     return f"""
-        <div class="metric-card">
-            <div class="metric-label">{svg(icon_name, 16, '#64748b')} {label}</div>
+        <div class="{card_class}">
+            <div class="metric-label">{svg(icon_name, 16, icon_color)} {label}</div>
             <div class="metric-value">{value}</div>
         </div>
     """

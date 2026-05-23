@@ -37,41 +37,43 @@ if data_loaded:
     def render_dashboard():
         # Initialize session state for playback timeline controls
         if 'active_year' not in st.session_state:
-            st.session_state.active_year = 2000
+            st.session_state.active_year = 2002  # Default to 2002 as shown in the reference image
+        if 'year_slider' not in st.session_state:
+            st.session_state.year_slider = 2002
         if 'is_playing' not in st.session_state:
             st.session_state.is_playing = False
         if 'timeline_mode' not in st.session_state:
-            st.session_state.timeline_mode = "Rentang Tahun"
+            st.session_state.timeline_mode = "Per Tahun"
         if 'year_range' not in st.session_state:
             st.session_state.year_range = (2000, 2025)
             
         # Get active range/year for branding header
-        if st.session_state.timeline_mode == "Rentang Tahun":
+        if st.session_state.timeline_mode == "Rentang Kustom":
             start_year, end_year = st.session_state.year_range
-            year_badge = f"{start_year} – {end_year}"
+            year_badge = f"Rentang: {start_year} – {end_year}"
         else:
             start_year = st.session_state.active_year
             end_year = st.session_state.active_year
-            year_badge = f"{start_year}"
+            year_badge = f"Tahun: {start_year}"
 
         # A. BRANDING HEADER
         st.markdown(render_header(year_badge), unsafe_allow_html=True)
 
         # B. DYNAMIC HORIZONTAL FILTER PANEL
-        st.markdown(f'<p class="filter-header" style="margin-bottom: 8px;">{svg("search", 18, "#2563eb")} Panel Filter Analisis</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="filter-header" style="margin-bottom: 8px;">{svg("calendar_month", 18, "#2563eb")} PANEL KONTROL & FILTER ANALISIS</p>', unsafe_allow_html=True)
         
         with st.container(border=True):
-            filter_col1, filter_col2 = st.columns([1, 1])
+            filter_col1, filter_col2, filter_col3 = st.columns([1.1, 1.3, 2.2])
             provinces_available = sorted(list(df_prov_annual['Propinsi'].unique()))
             
             with filter_col1:
-                st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Mode Analisis Waktu</p>', unsafe_allow_html=True)
+                st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Mode Analisis</p>', unsafe_allow_html=True)
                 
-                mode_options = ["Rentang Tahun", "Animasi (Play)"]
+                mode_options = ["Per Tahun", "Rentang Kustom"]
                 selected_mode = st.segmented_control(
                     "Mode",
                     options=mode_options,
-                    default=st.session_state.timeline_mode if st.session_state.timeline_mode in mode_options else "Rentang Tahun",
+                    default=st.session_state.timeline_mode if st.session_state.timeline_mode in mode_options else "Per Tahun",
                     label_visibility="collapsed",
                     key="mode_segmented"
                 )
@@ -82,74 +84,79 @@ if data_loaded:
                     
                 if selected_mode != st.session_state.timeline_mode:
                     st.session_state.timeline_mode = selected_mode
-                    if selected_mode == "Rentang Tahun":
+                    if selected_mode == "Rentang Kustom":
                         st.session_state.is_playing = False
                     st.rerun()
 
-                if st.session_state.timeline_mode == "Rentang Tahun":
-                    st.session_state.is_playing = False
-                    year_range = st.slider(
-                        "Pilih Rentang Tahun",
-                        min_value=2000,
-                        max_value=2025,
-                        value=st.session_state.year_range,
-                        step=1,
-                        key="year_range"
-                    )
-                    start_year, end_year = year_range
-                else:
-                    active_year = st.slider(
-                        "Pilih Tahun",
-                        min_value=2000,
-                        max_value=2025,
-                        value=st.session_state.active_year,
-                        step=1,
-                        key="active_year"
-                    )
-                    st.session_state.active_year = active_year
-                    start_year = st.session_state.active_year
-                    end_year = st.session_state.active_year
-                    
-                    # Playback controls
-                    btn_col1, btn_col2, btn_col3, btn_col4 = st.columns([1.3, 1.5, 1.3, 2.9])
-                    
-                    with btn_col1:
-                        if st.button("« Mundur", use_container_width=True, key="btn_back"):
-                            st.session_state.is_playing = False
-                            st.session_state.active_year = max(2000, st.session_state.active_year - 1) if st.session_state.active_year > 2000 else 2025
-                            st.rerun()
-                    
-                    with btn_col2:
-                        is_playing = st.session_state.is_playing
-                        play_label = "Pause" if is_playing else "Play"
-                        play_type = "primary" if is_playing else "secondary"
-                        if st.button(play_label, type=play_type, use_container_width=True, key="btn_play"):
-                            st.session_state.is_playing = not is_playing
-                            st.rerun()
-                            
-                    with btn_col3:
-                        if st.button("Maju »", use_container_width=True, key="btn_fwd"):
-                            st.session_state.is_playing = False
-                            st.session_state.active_year = st.session_state.active_year + 1 if st.session_state.active_year < 2025 else 2000
-                            st.rerun()
-                            
-                    with btn_col4:
-                        st.markdown(f"""
-                            <div style="font-weight: 700; font-size: 1rem; color: #2563eb; background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.2); padding: 7px 12px; border-radius: 8px; text-align: center; margin-top: 2px;">
-                                {svg("calendar_month", 16, "#2563eb")} Tahun: <span style="font-size:1.15rem; font-weight:800; color:#1e3a8a;">{st.session_state.active_year}</span>
-                            </div>
-                        """, unsafe_allow_html=True)
-           
             with filter_col2:
                 st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Pilih Provinsi</p>', unsafe_allow_html=True)
                 selected_provinces = st.multiselect(
                     "Pilih Provinsi",
                     options=provinces_available,
                     default=[],
-                    placeholder="Pilih Provinsi (Biarkan kosong untuk regional)",
-                    label_visibility="collapsed",
-                    help="Biarkan kosong untuk menampilkan semua provinsi secara regional."
+                    placeholder="Semua Provinsi",
+                    label_visibility="collapsed"
                 )
+                
+            with filter_col3:
+                if st.session_state.timeline_mode == "Rentang Kustom":
+                    st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Timeline Waktu</p>', unsafe_allow_html=True)
+                    year_range = st.slider(
+                        "Pilih Rentang Tahun",
+                        min_value=2000,
+                        max_value=2025,
+                        value=st.session_state.year_range,
+                        step=1,
+                        key="year_range_slider",
+                        label_visibility="collapsed"
+                    )
+                    start_year, end_year = year_range
+                    st.session_state.year_range = year_range
+                else:
+                    st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Timeline Waktu (Live)</p>', unsafe_allow_html=True)
+                    
+                    slider_subcol, controls_subcol = st.columns([55, 45])
+                    
+                    with slider_subcol:
+                        # Dynamic key forces re-initialization from the value parameter on programmatical updates!
+                        active_year = st.slider(
+                            "Pilih Tahun",
+                            min_value=2000,
+                            max_value=2025,
+                            value=st.session_state.active_year,
+                            step=1,
+                            key=f"year_slider_{st.session_state.active_year}",
+                            label_visibility="collapsed"
+                        )
+                        st.session_state.active_year = active_year
+                        start_year = active_year
+                        end_year = active_year
+                        
+                    with controls_subcol:
+                        c1, c2, c3, c4 = st.columns([1, 1, 1, 1.5])
+                        with c1:
+                            if st.button("«", use_container_width=True, key="btn_back"):
+                                st.session_state.is_playing = False
+                                st.session_state.active_year = max(2000, st.session_state.active_year - 1) if st.session_state.active_year > 2000 else 2025
+                                st.rerun()
+                        with c2:
+                            is_playing = st.session_state.is_playing
+                            play_label = "❚❚" if is_playing else "▶"
+                            play_type = "primary" if is_playing else "secondary"
+                            if st.button(play_label, type=play_type, use_container_width=True, key="btn_play"):
+                                st.session_state.is_playing = not is_playing
+                                st.rerun()
+                        with c3:
+                            if st.button("»", use_container_width=True, key="btn_fwd"):
+                                st.session_state.is_playing = False
+                                st.session_state.active_year = st.session_state.active_year + 1 if st.session_state.active_year < 2025 else 2000
+                                st.rerun()
+                        with c4:
+                            st.markdown(f"""
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #10b981; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 5px 8px; border-radius: 6px; text-align: center; font-family: 'Inter', sans-serif;">
+                                    {st.session_state.active_year}
+                                </div>
+                            """, unsafe_allow_html=True)
 
         # C. DATA FILTERING ENGINE
         df_filtered = df_prov_annual[
@@ -255,11 +262,12 @@ if data_loaded:
             st.info("Tidak ada data untuk diagram garis tren.")
                 
         # Handle animation playback rerun loop
-        if st.session_state.is_playing and st.session_state.timeline_mode == "Animasi (Play)":
+        if st.session_state.is_playing and st.session_state.timeline_mode == "Per Tahun":
             time.sleep(0.7)  # Dynamic, fluid frame transitions
-            st.session_state.active_year += 1
-            if st.session_state.active_year > 2025:
-                st.session_state.active_year = 2000  # Seamless wrap-around
+            next_year = st.session_state.active_year + 1
+            if next_year > 2025:
+                next_year = 2000  # Seamless wrap-around
+            st.session_state.active_year = next_year
             st.rerun()
 
     # Executing fragment dashboard
