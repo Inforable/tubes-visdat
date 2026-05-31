@@ -335,14 +335,39 @@ if data_loaded:
         st.markdown(render_chart_title("lightbulb", "Informasi Kunci & Wawasan Data"), unsafe_allow_html=True)
 
         if len(df_yearly_trend) > 0:
-            first_window = df_yearly_trend.head(min(3, len(df_yearly_trend)))['total_kejadian'].mean()
-            last_window = df_yearly_trend.tail(min(3, len(df_yearly_trend)))['total_kejadian'].mean()
-            if first_window and first_window > 0:
-                trend_value = f"{((last_window - first_window) / first_window) * 100:+.0f}%"
-                trend_body = "Rata-rata 3 tahun terakhir dibanding 3 tahun awal pada filter terpilih."
+            if st.session_state.timeline_mode == "Per Tahun":
+                active_year = st.session_state.active_year
+                before_window = df_yearly_trend[
+                    (df_yearly_trend["year"] >= active_year - 2)
+                    & (df_yearly_trend["year"] < active_year)
+                ]["total_kejadian"]
+                after_window = df_yearly_trend[
+                    (df_yearly_trend["year"] > active_year)
+                    & (df_yearly_trend["year"] <= active_year + 2)
+                ]["total_kejadian"]
+
+                before_avg = before_window.mean() if len(before_window) > 0 else None
+                after_avg = after_window.mean() if len(after_window) > 0 else None
+
+                if before_avg is not None and after_avg is not None:
+                    if before_avg >= 10:
+                        trend_value = f"{((after_avg - before_avg) / before_avg) * 100:+.1f}%"
+                        trend_body = "Rata-rata 2 tahun sesudah dibanding 2 tahun sebelum tahun aktif."
+                    else:
+                        trend_value = f"{(after_avg - before_avg):+,.0f} kasus"
+                        trend_body = "Baseline sebelum tahun aktif kecil, sehingga ditampilkan sebagai selisih rata-rata kasus."
+                else:
+                    trend_value = "N/A"
+                    trend_body = "Data tahun sekitar tahun aktif belum cukup untuk menghitung tren eskalasi."
             else:
-                trend_value = "Stabil"
-                trend_body = "Data awal terlalu kecil untuk mengukur eskalasi secara andal."
+                first_window = df_yearly_trend.head(min(3, len(df_yearly_trend)))["total_kejadian"].mean()
+                last_window = df_yearly_trend.tail(min(3, len(df_yearly_trend)))["total_kejadian"].mean()
+                if first_window >= 10:
+                    trend_value = f"{((last_window - first_window) / first_window) * 100:+.1f}%"
+                    trend_body = "Rata-rata 3 tahun terakhir dibanding 3 tahun awal pada rentang terpilih."
+                else:
+                    trend_value = f"{(last_window - first_window):+,.0f} kasus"
+                    trend_body = "Baseline awal rentang kecil, sehingga ditampilkan sebagai selisih rata-rata kasus."
         else:
             trend_value = "N/A"
             trend_body = "Tidak ada data tren untuk filter terpilih."
