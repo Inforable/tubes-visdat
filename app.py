@@ -200,6 +200,8 @@ if data_loaded:
         df_map_source = df_time_filtered.copy()
         if selected_pulau != ALL_PULAU_LABEL:
             df_map_source = df_map_source[df_map_source["Pulau"] == selected_pulau]
+        if selected_provinces:
+            df_map_source = df_map_source[df_map_source["Propinsi"].isin(selected_provinces)]
 
         df_province_summary = (
             df_map_source.groupby("Propinsi")
