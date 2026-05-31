@@ -220,7 +220,11 @@ if data_loaded:
         df_province_summary["total_area_km2"] = df_province_summary["total_area_km2"].fillna(0.0)
         df_province_summary["median_durasi"] = df_province_summary["median_durasi"].fillna(0.0)
 
-        df_line_filtered = df_time_filtered.copy()
+        if st.session_state.timeline_mode == "Per Tahun":
+            df_line_filtered = df_prov_annual.copy()
+        else:
+            df_line_filtered = df_time_filtered.copy()
+
         if selected_pulau != ALL_PULAU_LABEL:
             df_line_filtered = df_line_filtered[df_line_filtered["Pulau"] == selected_pulau]
         if selected_provinces:
