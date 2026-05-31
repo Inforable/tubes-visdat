@@ -43,5 +43,9 @@ ENV/
 .env
 nginx/init.conf
 
+# Certbot & runtime data
+certbot-data/
+certbot-www/
+
 # Streamlit local cache
 .streamlit/cache/

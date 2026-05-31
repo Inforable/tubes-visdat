@@ -30,20 +30,19 @@ echo -e "${GREEN}=========================================${NC}"
 echo ""
 
 # 1. Setup direktori certbot
-mkdir -p ./certbot-data/conf/live/${DOMAIN} ./certbot-data/www
+mkdir -p ./certbot-data/live/${DOMAIN} ./certbot-www
 
 # 2. Download TLS parameters jika belum ada
-if [ ! -e "./certbot-data/conf/options-ssl-nginx.conf" ]; then
-    mkdir -p ./certbot-data/conf
-    curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > ./certbot-data/conf/options-ssl-nginx.conf
-    curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/ssl-dhparams.pem > ./certbot-data/conf/ssl-dhparams.pem
+if [ ! -e "./certbot-data/options-ssl-nginx.conf" ]; then
+    curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > ./certbot-data/options-ssl-nginx.conf
+    curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/ssl-dhparams.pem > ./certbot-data/ssl-dhparams.pem
     echo -e "${GREEN}[1/5] TLS parameters diunduh.${NC}"
 else
     echo -e "${GREEN}[1/5] TLS parameters sudah ada, skip.${NC}"
 fi
 
 # 3. Cek certificate existing
-if [ -d "./certbot-data/conf/live/${DOMAIN}" ]; then
+if [ -d "./certbot-data/live/${DOMAIN}" ] && [ -e "./certbot-data/live/${DOMAIN}/fullchain.pem" ]; then
     echo -e "${YELLOW}[2/5] Certificate sudah ada.${NC}"
     docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
     exit 0
