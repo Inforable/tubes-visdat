@@ -4,6 +4,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Auto-init .env jika belum ada
+chmod +x "${SCRIPT_DIR}/scripts/init-env.sh"
 "${SCRIPT_DIR}/scripts/init-env.sh"
 
 # Load variabel dari .env
