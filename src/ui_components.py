@@ -75,18 +75,15 @@ LIGHT_CSS = """
         padding: 20px 24px !important;
         display: flex !important;
         flex-direction: column !important;
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type {
-            background-color: #ffffff !important;
-            border-radius: 12px !important;
-            box-shadow: 0 8px 26px rgba(12, 20, 37, 0.06) !important;
-            margin-bottom: 0.35rem !important;
-        }
+        justify-content: center !important;
+        box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.04) !important;
+    }
+    .metric-label { font-size: 0.75rem !important; font-weight: 700 !important; color: #8290a8 !important; margin-bottom: 8px !important; text-transform: uppercase !important; display: flex !important; align-items: center !important; }
+    .metric-value { font-size: 2.2rem !important; font-weight: 800 !important; color: #0c1425 !important; line-height: 1 !important; }
 
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type > div {
-            padding: 1rem 1.05rem 0.95rem 1.05rem !important;
-        }
-
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type .header-title-row {
+    /* 5. TYPOGRAPHY & HEADER */
+    .branding-banner { padding: 0 10px 10px 10px !important; margin: 0 !important; }
+    .branding-title { font-size: 2rem !important; font-weight: 800 !important; color: #0c1425 !important; margin: 0 0 4px 0 !important; line-height: 1.1 !important; }
     .branding-subtitle { font-size: 0.9rem !important; font-weight: 400 !important; color: #8290a8 !important; margin: 0 !important; }
     .year-badge { font-size: 0.875rem !important; font-weight: 600 !important; color: #3d6ef5 !important; background: rgba(61,110,245,0.08) !important; padding: 6px 18px !important; border-radius: 8px !important; border: none !important; }
     .filter-col-label { font-size: 0.7rem !important; font-weight: 700 !important; letter-spacing: 0.8px !important; text-transform: uppercase !important; color: #8290a8 !important; margin: 0 0 8px 0 !important; }
@@ -95,13 +92,13 @@ LIGHT_CSS = """
     .header-shell {
         background: #ffffff !important;
         border: 1px solid #e4eaf3 !important;
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type .header-title-block {
+        border-radius: 12px !important;
         box-shadow: 0 8px 26px rgba(12, 20, 37, 0.06) !important;
         padding: 1.1rem 1.15rem 1rem 1.15rem !important;
         margin-bottom: 0.35rem !important;
     }
 
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type .branding-title {
+    .header-shell [data-testid="stVerticalBlock"] {
         gap: 0.65rem !important;
     }
 
@@ -110,7 +107,7 @@ LIGHT_CSS = """
         margin: 0 !important;
     }
 
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type .branding-subtitle {
+    .header-year-badge {
         width: fit-content !important;
         margin-left: auto !important;
         margin-right: 0 !important;
@@ -119,7 +116,7 @@ LIGHT_CSS = """
     }
 
     .header-divider {
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type .header-year-badge {
+        height: 1px !important;
         background: linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0)) !important;
         margin: 0.15rem 0 0.3rem 0 !important;
     }
@@ -128,55 +125,51 @@ LIGHT_CSS = """
         gap: 0.75rem !important;
         align-items: end !important;
     }
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type .header-divider {
+
     .header-shell [data-testid="stSelectbox"],
     .header-shell [data-testid="stSelectbox"] > div,
     .header-shell [data-baseweb="select"] {
         width: 100% !important;
         margin-top: 0 !important;
     }
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stHorizontalBlock"] {
+
     .header-shell [data-testid="stSelectbox"] label,
     .header-shell .stSelectbox label {
         display: none !important;
     }
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"],
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"] > div,
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-baseweb="select"] {
+
+    .header-shell [data-testid="stSelectbox"] > div:first-child,
+    .header-shell [data-baseweb="select"] > div:first-child {
         min-height: 40px !important;
         align-items: center !important;
     }
 
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"] label,
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type .stSelectbox label {
+    .header-shell .stSelectbox {
+        margin-top: 0 !important;
         padding-top: 0 !important;
     }
 
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"] > div:first-child,
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-baseweb="select"] > div:first-child {
+    .header-shell .stSelectbox > div {
+        margin-top: 0 !important;
     }
     div[data-testid="stVerticalBlockBorderWrapper"] {
-            background-color: #ffffff !important;
-            border: 1px solid #dbe3ee !important;
-            border-radius: 8px !important;
-            color: #2563eb !important;
         border-radius: 12px !important;
         box-shadow: 0 8px 26px rgba(12, 20, 37, 0.06) !important;
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"] [data-baseweb="select"] * {
+        margin-bottom: 0.35rem !important;
     }
 
     div[data-testid="stVerticalBlockBorderWrapper"] > div {
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"] [aria-selected="true"],
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"] [role="option"] {
+        padding: 1rem 1.05rem 0.9rem 1.05rem !important;
+    }
 
     .header-title-row {
         display: flex !important;
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"] svg {
+        justify-content: space-between !important;
         align-items: flex-start !important;
         gap: 1rem !important;
         margin: 0 !important;
         padding: 0 !important;
-        div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type .filter-col-label {
+    }
 
     .header-title-block {
         min-width: 0 !important;
