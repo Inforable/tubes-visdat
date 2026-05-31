@@ -11,9 +11,6 @@ from src.ui_components import (
 )
 from src.charts import create_map, create_bar, create_line
 
-# ==============================================================================
-# PAGE CONFIG
-# ==============================================================================
 st.set_page_config(
     page_title="Visualisasi Banjir Indonesia",
     page_icon=str(Path(__file__).resolve().parent / "assets" / "waves_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg"),
@@ -22,9 +19,6 @@ st.set_page_config(
 )
 st.markdown(LIGHT_CSS, unsafe_allow_html=True)
 
-# ==============================================================================
-# DATA LOADING
-# ==============================================================================
 try:
     df_prov_annual, df_trend_global = load_data()
     geojson_data = load_geojson()
@@ -33,18 +27,12 @@ except Exception as e:
     st.error(f"Gagal memuat dataset: {e}")
     data_loaded = False
 
-# ==============================================================================
-# HELPERS
-# ==============================================================================
 def col_label(text: str):
     st.markdown(
         f'<p class="filter-col-label">{text}</p>',
         unsafe_allow_html=True,
     )
 
-# ==============================================================================
-# DASHBOARD FRAGMENT
-# ==============================================================================
 if data_loaded:
     @st.fragment
     def render_dashboard():
@@ -83,6 +71,7 @@ if data_loaded:
         provinces_available = sorted(df_prov_annual["Propinsi"].unique().tolist())
 
         with st.container(border=True):
+            st.markdown('<div class="header-shell">', unsafe_allow_html=True)
             st.markdown(
                 f"""
                 <div class="header-title-row">
@@ -139,6 +128,8 @@ if data_loaded:
                     label_visibility="collapsed",
                     key="province_selectbox",
                 )
+
+            st.markdown('</div>', unsafe_allow_html=True)
 
         if selected_provinces == "Semua Provinsi":
             selected_provinces = []
