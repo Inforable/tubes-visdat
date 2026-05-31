@@ -152,6 +152,101 @@ LIGHT_CSS = """
     .header-shell .stSelectbox > div {
         margin-top: 0 !important;
     }
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 26px rgba(12, 20, 37, 0.06) !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        padding: 1rem 1.05rem 0.9rem 1.05rem !important;
+    }
+
+    .header-title-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .header-title-block {
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .header-year-badge {
+        width: fit-content !important;
+        margin-left: auto !important;
+        margin-right: 0 !important;
+        margin-top: 0.1rem !important;
+        white-space: nowrap !important;
+    }
+
+    .header-divider {
+        height: 1px !important;
+        width: 100% !important;
+        background: linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0)) !important;
+        margin: 0.45rem 0 0.35rem 0 !important;
+    }
+
+    .branding-title {
+        font-size: 1.75rem !important;
+        font-weight: 800 !important;
+        color: #0c1425 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1.1 !important;
+    }
+
+    .branding-subtitle {
+        font-size: 0.9rem !important;
+        font-weight: 400 !important;
+        color: #8290a8 !important;
+        margin: 0.2rem 0 0 0 !important;
+        padding: 0 !important;
+        line-height: 1.35 !important;
+    }
+
+    .header-divider {
+        height: 1px !important;
+        width: 100% !important;
+        background: linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0)) !important;
+        margin: 0.4rem 0 0.35rem 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"] {
+        gap: 0.65rem !important;
+        align-items: end !important;
+    }
+
+    [data-testid="stSelectbox"] {
+        margin-top: 0 !important;
+    }
+
+    [data-testid="stSelectbox"] > div,
+    [data-baseweb="select"] {
+        width: 100% !important;
+        margin-top: 0 !important;
+    }
+
+    [data-testid="stSelectbox"] label,
+    .stSelectbox label {
+        display: none !important;
+    }
+
+    [data-testid="stSelectbox"] > div:first-child,
+    [data-baseweb="select"] > div:first-child {
+        min-height: 40px !important;
+        align-items: center !important;
+        border-radius: 8px !important;
+    }
+
+    .filter-col-label {
+        margin: 0 0 0.35rem 0 !important;
+    }
 
     .top-hero-row {
         display: flex !important;

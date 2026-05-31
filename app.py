@@ -82,25 +82,19 @@ if data_loaded:
         # ── TOP HEADER ─────────────────────────────────────────────────
         provinces_available = sorted(df_prov_annual["Propinsi"].unique().tolist())
 
-        st.markdown('<div class="header-shell">', unsafe_allow_html=True)
-        header_container = st.container()
-        with header_container:
-            row1_left, row1_right = st.columns([1.45, 0.55], gap="large", vertical_alignment="center")
-            with row1_left:
-                st.markdown(
-                    """
-                    <div class="branding-banner header-branding">
-                        <h1 class="branding-title">Total Kejadian Banjir di Indonesia</h1>
-                        <p class="branding-subtitle">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</p>
+        with st.container(border=True):
+            st.markdown(
+                f"""
+                <div class="header-title-row">
+                    <div class="header-title-block">
+                        <div class="branding-title">Total Kejadian Banjir di Indonesia</div>
+                        <div class="branding-subtitle">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</div>
                     </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-            with row1_right:
-                st.markdown(
-                    f'<div class="year-badge header-year-badge">{year_badge}</div>',
-                    unsafe_allow_html=True,
-                )
+                    <div class="year-badge header-year-badge">{year_badge}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
             st.markdown('<div class="header-divider"></div>', unsafe_allow_html=True)
 
@@ -125,7 +119,7 @@ if data_loaded:
             with filter_cols[1]:
                 col_label("Filter Pulau")
                 selected_pulau = st.selectbox(
-                    "Pulau",
+                    "Filter Pulau",
                     options=PULAU_OPTIONS,
                     index=PULAU_OPTIONS.index(st.session_state.pulau_filter)
                     if st.session_state.pulau_filter in PULAU_OPTIONS else 0,
@@ -139,14 +133,12 @@ if data_loaded:
             with filter_cols[2]:
                 col_label("Filter Provinsi")
                 selected_provinces = st.selectbox(
-                    "Provinsi",
+                    "Filter Provinsi",
                     options=["Semua Provinsi"] + province_options,
                     index=0,
                     label_visibility="collapsed",
                     key="province_selectbox",
                 )
-
-        st.markdown('</div>', unsafe_allow_html=True)
 
         if selected_provinces == "Semua Provinsi":
             selected_provinces = []
@@ -213,16 +205,16 @@ if data_loaded:
                             )
                             st.rerun()
         # ── DATA FILTERING ──────────────────────────────────────────────
-        df_filtered = df_prov_annual[
+        df_time_filtered = df_prov_annual[
             (df_prov_annual["year"] >= s) & (df_prov_annual["year"] <= e)
         ]
+
+        df_map_source = df_time_filtered.copy()
         if selected_pulau != ALL_PULAU_LABEL:
-            df_filtered = df_filtered[df_filtered["Pulau"] == selected_pulau]
-        if selected_provinces:
-            df_filtered = df_filtered[df_filtered["Propinsi"].isin(selected_provinces)]
+            df_map_source = df_map_source[df_map_source["Pulau"] == selected_pulau]
 
         df_province_summary = (
-            df_filtered.groupby("Propinsi")
+            df_map_source.groupby("Propinsi")
             .agg(
                 total_kejadian=("frekuensi_banjir", "sum"),
                 total_area_km2=("total_area_km2", "sum"),
@@ -231,12 +223,18 @@ if data_loaded:
             .reset_index()
         )
 
-        master_provinces = province_options if (selected_pulau != ALL_PULAU_LABEL or selected_provinces) else provinces_available
+        master_provinces = provinces_available
         df_master = pd.DataFrame({"Propinsi": master_provinces})
         df_province_summary = pd.merge(df_master, df_province_summary, on="Propinsi", how="left")
         df_province_summary["total_kejadian"] = df_province_summary["total_kejadian"].fillna(0).astype(int)
         df_province_summary["total_area_km2"] = df_province_summary["total_area_km2"].fillna(0.0)
         df_province_summary["median_durasi"] = df_province_summary["median_durasi"].fillna(0.0)
+
+        df_line_filtered = df_time_filtered.copy()
+        if selected_pulau != ALL_PULAU_LABEL:
+            df_line_filtered = df_line_filtered[df_line_filtered["Pulau"] == selected_pulau]
+        if selected_provinces:
+            df_line_filtered = df_line_filtered[df_line_filtered["Propinsi"].isin(selected_provinces)]
 
         total_events = int(df_province_summary["total_kejadian"].sum())
         affected_prov_count = int((df_province_summary["total_kejadian"] > 0).sum())
@@ -273,7 +271,6 @@ if data_loaded:
                     df_province_summary,
                     geojson_data,
                     range_color=(map_min, map_max),
-                    zoom_to_selection=(selected_pulau != ALL_PULAU_LABEL or len(selected_provinces) > 0),
                 )
 
                 fig_map.update_layout(
@@ -306,15 +303,9 @@ if data_loaded:
 
         # ── LINE — FULL WIDTH BELOW ────────────────────────────────────
         if st.session_state.timeline_mode == "Per Tahun":
-            df_line_filtered = df_prov_annual.copy()
-            if selected_pulau != ALL_PULAU_LABEL:
-                df_line_filtered = df_line_filtered[df_line_filtered["Pulau"] == selected_pulau]
-            if selected_provinces:
-                df_line_filtered = df_line_filtered[df_line_filtered["Propinsi"].isin(selected_provinces)]
             line_start_year = int(df_prov_annual["year"].min())
             line_end_year = int(df_prov_annual["year"].max())
         else:
-            df_line_filtered = df_filtered.copy()
             line_start_year = s
             line_end_year = e
 

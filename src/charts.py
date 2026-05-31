@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 # ==============================================================================
 # PREMIUM GEOSPATIAL MAP GENERATOR (OPTIMIZED FOR REAL-TIME STREAMING)
 # ==============================================================================
-def create_map(df_province_summary, geojson_data, range_color=None, zoom_to_selection=False):
+def create_map(df_province_summary, geojson_data, range_color=None):
     """
     Returns fig_map configured with:
     - Pre-parsed cached GeoJSON data to ensure extremely fast render loop.
@@ -48,21 +48,16 @@ def create_map(df_province_summary, geojson_data, range_color=None, zoom_to_sele
         hover_data=["Propinsi", "total_area_km2"]
     )
 
-    geos_kwargs = dict(
+    fig_map.update_geos(
         projection_type="mercator",
         visible=False,
         showcoastlines=False,
         showcountries=False,
         showframe=False,
-        bgcolor="rgba(0,0,0,0)"
+        bgcolor="rgba(0,0,0,0)",
+        lonaxis_range=[94.0, 142.0],
+        lataxis_range=[-11.5, 8.5],
     )
-    if zoom_to_selection:
-        geos_kwargs["fitbounds"] = "locations"
-    else:
-        geos_kwargs["lonaxis_range"] = [94.0, 142.0]
-        geos_kwargs["lataxis_range"] = [-11.0, 8.0]
-
-    fig_map.update_geos(**geos_kwargs)
     
     fig_map.update_layout(
         height=360,
