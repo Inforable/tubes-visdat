@@ -3,7 +3,6 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Auto-init .env jika belum ada
 chmod +x "${SCRIPT_DIR}/scripts/init-env.sh"
 "${SCRIPT_DIR}/scripts/init-env.sh"
 
@@ -27,38 +26,22 @@ echo -e "${GREEN}  SSL Init untuk ${DOMAIN}              ${NC}"
 echo -e "${GREEN}=========================================${NC}"
 echo ""
 
-# Helper: cek file valid (ada dan size > 0)
-file_valid() {
-    [ -s "$1" ]
-}
-
-# 1. Setup direktori
-mkdir -p ./certbot-www
-sudo mkdir -p /etc/letsencrypt
-
-# 2. Download/fix TLS parameters jika belum ada atau rusak (size 0)
-if ! file_valid "/etc/letsencrypt/options-ssl-nginx.conf" || ! file_valid "/etc/letsencrypt/ssl-dhparams.pem"; then
-    curl -sL https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf | sudo tee /etc/letsencrypt/options-ssl-nginx.conf > /dev/null
-    curl -sL https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/ssl-dhparams.pem | sudo tee /etc/letsencrypt/ssl-dhparams.pem > /dev/null
-    echo -e "${GREEN}[1/3] TLS parameters diunduh ke host.${NC}"
-else
-    echo -e "${GREEN}[1/3] TLS parameters OK, skip.${NC}"
-fi
-
-# 3. Cek certificate existing → kalau ada, langsung start docker dan selesai
-if [ -d "/etc/letsencrypt/live/${DOMAIN}" ] && file_valid "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem"; then
-    echo -e "${YELLOW}[2/3] Certificate sudah ada di host. Start docker ...${NC}"
-    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# 1. Cek certificate existing → langsung start docker
+if [ -d "/etc/letsencrypt/live/${DOMAIN}" ] && [ -f "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" ]; then
+    echo -e "${YELLOW}[1/1] Certificate sudah ada, start docker ...${NC}"
+    docker compose -f docker-compose.yml -f docker-compose.prod.yml down 2>/dev/null || true
+    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
     echo ""
     echo -e "${GREEN}============================================================${NC}"
-    echo -e "${GREEN}  Stack aktif!                                             ${NC}"
-    echo -e "${GREEN}  https://${DOMAIN}                                       ${NC}"
+    echo -e "${GREEN}  https://${DOMAIN}${NC}"
     echo -e "${GREEN}============================================================${NC}"
     exit 0
 fi
 
-# 4. Jalankan nginx sementara (HTTP-only) untuk ACME challenge
-echo -e "${YELLOW}[2/3] Menyalakan nginx sementara untuk ACME ...${NC}"
+# 2. Setup webroot & nginx temp untuk ACME
+mkdir -p ./certbot-www
+
+echo -e "${YELLOW}[1/3] Menyalakan nginx sementara untuk ACME ...${NC}"
 
 cat > ./nginx/init.conf <<EOF
 server {
@@ -75,8 +58,8 @@ docker run -d --rm --name nginx-temp \
     -v "$(pwd)/certbot-www:/var/www/certbot" \
     nginx:alpine
 
-# 5. Request certificate via certbot DI HOST (webroot)
-echo -e "${YELLOW}[3/3] Requesting Let's Encrypt certificate via host certbot ...${NC}"
+# 3. Request certificate via host certbot
+echo -e "${YELLOW}[2/3] Requesting Let's Encrypt certificate ...${NC}"
 
 sudo certbot certonly --webroot \
     -w "$(pwd)/certbot-www" \
@@ -86,19 +69,18 @@ sudo certbot certonly --webroot \
     --agree-tos \
     --non-interactive
 
-# 6. Cleanup & start production stack
+# 4. Cleanup & start stack
+echo -e "${YELLOW}[3/3] Cleanup & start production stack ...${NC}"
 docker stop nginx-temp 2>/dev/null || true
 rm ./nginx/init.conf
 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
-# 7. Setup cron auto-renew (mingguan) + reload nginx container
+# 5. Cron auto-renew
 CRON_JOB="0 2 * * 0 certbot renew --quiet --deploy-hook 'docker exec visdat-nginx nginx -s reload'"
 if ! sudo crontab -l 2>/dev/null | grep -q "certbot renew"; then
     (sudo crontab -l 2>/dev/null; echo "$CRON_JOB") | sudo crontab -
-    echo -e "${GREEN}Cron auto-renew ditambahkan: setiap Minggu jam 02:00${NC}"
-else
-    echo -e "${GREEN}Cron auto-renew sudah ada.${NC}"
+    echo -e "${GREEN}Cron auto-renew: Minggu 02:00${NC}"
 fi
 
 echo ""
