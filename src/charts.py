@@ -3,7 +3,7 @@ import plotly.express as px
 # ==============================================================================
 # PREMIUM GEOSPATIAL MAP GENERATOR (OPTIMIZED FOR REAL-TIME STREAMING)
 # ==============================================================================
-def create_map(df_province_summary, geojson_data, max_val=None):
+def create_map(df_province_summary, geojson_data, range_color=None, zoom_to_selection=False):
     """
     Returns fig_map configured with:
     - Pre-parsed cached GeoJSON data to ensure extremely fast render loop.
@@ -23,8 +23,18 @@ def create_map(df_province_summary, geojson_data, max_val=None):
         [1.0, "#1e3a8a"]       # Deep navy blue highlight
     ]
     
-    if max_val is None:
-        max_val = max(1, df_province_summary['total_kejadian'].max())
+    if df_province_summary.empty:
+        range_color = range_color or (0, 1)
+    elif range_color is None:
+        min_val = int(df_province_summary["total_kejadian"].min())
+        max_val = int(df_province_summary["total_kejadian"].max())
+        if max_val <= min_val:
+            max_val = min_val + 1
+        range_color = (min_val, max_val)
+    else:
+        min_val, max_val = range_color
+        if max_val <= min_val:
+            range_color = (min_val, min_val + 1)
     
     fig_map = px.choropleth(
         df_province_summary,
@@ -33,20 +43,25 @@ def create_map(df_province_summary, geojson_data, max_val=None):
         featureidkey="properties.Propinsi",
         color="total_kejadian",
         color_continuous_scale=custom_navy_scale,
-        range_color=[0, max_val],
+        range_color=range_color,
         hover_data=["Propinsi", "total_area_km2"]
     )
     
-    fig_map.update_geos(
+    geos_kwargs = dict(
         projection_type="mercator",
-        lonaxis_range=[94.0, 142.0],
-        lataxis_range=[-11.0, 8.0],
         visible=False,
         showcoastlines=False,
         showcountries=False,
         showframe=False,
         bgcolor="rgba(0,0,0,0)"
     )
+    if zoom_to_selection:
+        geos_kwargs["fitbounds"] = "locations"
+    else:
+        geos_kwargs["lonaxis_range"] = [94.0, 142.0]
+        geos_kwargs["lataxis_range"] = [-11.0, 8.0]
+
+    fig_map.update_geos(**geos_kwargs)
     
     fig_map.update_layout(
         height=360,
@@ -101,7 +116,11 @@ def create_bar(df_province_summary):
     - Soft slate gridlines.
     - stable uirevision to avoid redraw flashes.
     """
-    df_top10 = df_province_summary.sort_values(by='total_kejadian', ascending=True).tail(10)
+    df_top10 = (
+        df_province_summary[df_province_summary["total_kejadian"] > 0]
+        .nlargest(10, "total_kejadian")
+        .sort_values(by="total_kejadian", ascending=True)
+    )
     
     fig_bar = px.bar(
         df_top10,
@@ -150,7 +169,8 @@ def create_bar(df_province_summary):
             title_font=dict(color="#475569", size=11),
             tickfont=dict(color="#475569"),
             gridcolor="#e2e8f0",
-            zeroline=False
+            zeroline=False,
+            range=[0, max(1, int(df_top10["total_kejadian"].max())) * 1.15] if len(df_top10) > 0 else None,
         ),
         yaxis=dict(
             title="",
@@ -213,7 +233,7 @@ def create_line(df_yearly_trend, active_year, timeline_mode, start_year, end_yea
         )
     
     fig_line.update_layout(
-        height=240,
+        height=560,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font_color="#0f172a",
