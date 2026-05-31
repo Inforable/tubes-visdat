@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import time
+from pathlib import Path
 from src.data_loader import load_data, load_geojson, PULAU_OPTIONS, ALL_PULAU_LABEL
 from src.ui_components import (
     LIGHT_CSS,
@@ -15,7 +16,7 @@ from src.charts import create_map, create_bar, create_line
 # ==============================================================================
 st.set_page_config(
     page_title="Visualisasi Banjir Indonesia",
-    page_icon="🌊",
+    page_icon=str(Path(__file__).resolve().parent / "assets" / "waves_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg"),
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -161,7 +162,7 @@ if data_loaded:
                 s, e = year_range
             else:
                 col_label("Timeline Waktu")
-                slider_col, ctrl_col = st.columns([6, 2], gap="large")
+                slider_col, ctrl_col = st.columns([6, 2.2], gap="large")
 
                 with slider_col:
                     active_year = st.slider(
@@ -176,9 +177,9 @@ if data_loaded:
                     s = e = active_year
 
                 with ctrl_col:
-                    c1, c2, c3, c4 = st.columns([1, 1, 1, 1.4])
+                    c1, c2, c3, c4 = st.columns([1.05, 1.1, 1.05, 1.4])
                     with c1:
-                        if st.button("«", use_container_width=True, key="btn_back"):
+                        if st.button("Prev", use_container_width=True, key="btn_back"):
                             st.session_state.is_playing = False
                             st.session_state.pending_year_slider = (
                                 max(2000, st.session_state.active_year - 1)
@@ -188,7 +189,7 @@ if data_loaded:
                     with c2:
                         is_playing = st.session_state.is_playing
                         if st.button(
-                            "❚❚" if is_playing else "▶",
+                            "Pause" if is_playing else "Play",
                             type="primary" if is_playing else "secondary",
                             use_container_width=True,
                             key="btn_play",
@@ -196,7 +197,7 @@ if data_loaded:
                             st.session_state.is_playing = not is_playing
                             st.rerun()
                     with c3:
-                        if st.button("»", use_container_width=True, key="btn_fwd"):
+                        if st.button("Next", use_container_width=True, key="btn_fwd"):
                             st.session_state.is_playing = False
                             st.session_state.pending_year_slider = (
                                 st.session_state.active_year + 1
@@ -296,7 +297,19 @@ if data_loaded:
         st.markdown('<div class="section-gap-lg"></div>', unsafe_allow_html=True)
 
         # ── LINE — FULL WIDTH BELOW ────────────────────────────────────
-        df_line_filtered = df_filtered
+        if st.session_state.timeline_mode == "Per Tahun":
+            df_line_filtered = df_prov_annual.copy()
+            if selected_pulau != ALL_PULAU_LABEL:
+                df_line_filtered = df_line_filtered[df_line_filtered["Pulau"] == selected_pulau]
+            if selected_provinces:
+                df_line_filtered = df_line_filtered[df_line_filtered["Propinsi"].isin(selected_provinces)]
+            line_start_year = int(df_prov_annual["year"].min())
+            line_end_year = int(df_prov_annual["year"].max())
+        else:
+            df_line_filtered = df_filtered.copy()
+            line_start_year = s
+            line_end_year = e
+
         df_yearly_trend = (
             df_line_filtered.groupby("year")
             .agg(total_kejadian=("frekuensi_banjir", "sum"))
@@ -309,7 +322,8 @@ if data_loaded:
                 df_yearly_trend,
                 st.session_state.active_year,
                 st.session_state.timeline_mode,
-                s, e,
+                line_start_year,
+                line_end_year,
             )
 
             fig_line.update_layout(
@@ -344,13 +358,13 @@ if data_loaded:
 
         insight_cols = st.columns(4)
         with insight_cols[0]:
-            st.markdown(render_insight_card("🚨", "Total Beban Risiko", f"{total_events:,}", "Akumulasi kejadian banjir pada wilayah dan rentang waktu yang dipilih."), unsafe_allow_html=True)
+            st.markdown(render_insight_card("waves", "Total Beban Risiko", f"{total_events:,}", "Akumulasi kejadian banjir pada wilayah dan rentang waktu yang dipilih."), unsafe_allow_html=True)
         with insight_cols[1]:
-            st.markdown(render_insight_card("📍", "Konsentrasi Geografis", max_prov_name, f"Provinsi dengan kejadian tertinggi: {max_prov_val:,} kasus."), unsafe_allow_html=True)
+            st.markdown(render_insight_card("map_search", "Konsentrasi Geografis", max_prov_name, f"Provinsi dengan kejadian tertinggi: {max_prov_val:,} kasus."), unsafe_allow_html=True)
         with insight_cols[2]:
-            st.markdown(render_insight_card("📈", "Tren Eskalasi", trend_value, trend_body), unsafe_allow_html=True)
+            st.markdown(render_insight_card("chart_data", "Tren Eskalasi", trend_value, trend_body), unsafe_allow_html=True)
         with insight_cols[3]:
-            st.markdown(render_insight_card("💡", "Rekomendasi", recommendation_value, "Fokus pada zona dengan kejadian tertinggi, lalu turun ke level provinsi untuk mitigasi spesifik."), unsafe_allow_html=True)
+            st.markdown(render_insight_card("lightbulb", "Rekomendasi", recommendation_value, "Fokus pada zona dengan kejadian tertinggi, lalu turun ke level provinsi untuk mitigasi spesifik."), unsafe_allow_html=True)
 
         # ── PLAYBACK LOOP ───────────────────────────────────────────────
         if st.session_state.is_playing and st.session_state.timeline_mode == "Per Tahun":

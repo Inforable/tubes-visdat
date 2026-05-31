@@ -144,6 +144,21 @@ LIGHT_CSS = """
     /* 7. UI CONTROLS - TANPA BORDER ABU */
     [data-baseweb="select"] > div:first-child { background-color: #f5f7fb !important; border: none !important; border-radius: 8px !important; box-shadow: 0 1px 4px rgba(0,0,0,0.02) !important; }
     .stApp div.stButton > button { background-color: #ffffff !important; color: #374258 !important; border: none !important; border-radius: 8px !important; font-weight: 600 !important; font-size: 0.875rem !important; padding: 3px 10px !important; height: 32px !important; box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important; }
+    .stApp div.stButton > button[data-testid="baseButton-secondary"],
+    .stApp div.stButton > button[data-testid="baseButton-primary"] {
+        background-color: #f5f7fb !important;
+        border: 1px solid #dce2ed !important;
+        border-radius: 8px !important;
+        color: #334155 !important;
+        min-height: 36px !important;
+        padding: 0.4rem 0.8rem !important;
+    }
+
+    .stApp div.stButton > button[data-testid="baseButton-primary"] {
+        background-color: #3d6ef5 !important;
+        color: #ffffff !important;
+        border-color: #3d6ef5 !important;
+    }
     div[data-testid="stSegmentedControl"],
     div[data-testid="stSegmentedControl"] > div,
     div[data-testid="stSegmentedControl"] div[role="radiogroup"],
@@ -269,9 +284,11 @@ LIGHT_CSS = """
         color: #8290a8 !important;
     }
 
-    .insight-emoji {
+    .insight-icon {
         font-size: 1.05rem !important;
         line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
     }
 
     .insight-value {
@@ -317,10 +334,10 @@ def render_year_display(year: int) -> str:
     return f'<div class="year-display">{year}</div>'
 
 
-def render_insight_card(emoji: str, label: str, value: str, body: str) -> str:
+def render_insight_card(icon_name: str, label: str, value: str, body: str) -> str:
     return f"""
         <div class="insight-card">
-            <div class="insight-head"><span class="insight-emoji">{emoji}</span><span>{label}</span></div>
+            <div class="insight-head"><span class="insight-icon">{svg(icon_name, 16, '#3d6ef5')}</span><span>{label}</span></div>
             <div class="insight-value">{value}</div>
             <div class="insight-body">{body}</div>
         </div>
