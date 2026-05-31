@@ -17,7 +17,7 @@ if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
     exit 1
 fi
 
-domains=("${DOMAIN}" "${WWW_DOMAIN}")
+domains=("${DOMAIN}")
 rsa_key_size=4096
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -54,7 +54,7 @@ echo -e "${YELLOW}[2/5] Menyalakan nginx sementara untuk ACME ...${NC}"
 cat > ./nginx/init.conf <<EOF
 server {
     listen 80;
-    server_name ${DOMAIN} ${WWW_DOMAIN};
+    server_name ${DOMAIN};
     location /.well-known/acme-challenge/ { root /var/www/certbot; }
     location / { return 200 "SSL Init ..."; add_header Content-Type text/plain; }
 }
