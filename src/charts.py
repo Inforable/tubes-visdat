@@ -3,7 +3,7 @@ import plotly.express as px
 # ==============================================================================
 # PREMIUM GEOSPATIAL MAP GENERATOR (OPTIMIZED FOR REAL-TIME STREAMING)
 # ==============================================================================
-def create_map(df_province_summary, geojson_data):
+def create_map(df_province_summary, geojson_data, max_val=None):
     """
     Returns fig_map configured with:
     - Pre-parsed cached GeoJSON data to ensure extremely fast render loop.
@@ -13,9 +13,9 @@ def create_map(df_province_summary, geojson_data):
     - Custom HTML hover tooltips.
     - stable uirevision to avoid resetting zoom and pan coordinates when dragging.
     """
-    # Premium sequential scale from light slate-grey (#e2e8f0) up to deep navy (#1e3a8a)
+    # Premium sequential scale from clean off-white (#f8fafc) up to deep navy (#1e3a8a)
     custom_navy_scale = [
-        [0.0, "#e2e8f0"],      # Clean slate-grey for exactly 0 occurrences (inactive provinces)
+        [0.0, "#f8fafc"],      # Clean off-white for exactly 0 occurrences (dry/safe land)
         [0.00001, "#dbeafe"],  # Extremely soft light blue for starting cases
         [0.2, "#93c5fd"],      # Light blue
         [0.5, "#3b82f6"],      # Vibrant royal blue
@@ -23,7 +23,8 @@ def create_map(df_province_summary, geojson_data):
         [1.0, "#1e3a8a"]       # Deep navy blue highlight
     ]
     
-    max_val = max(1, df_province_summary['total_kejadian'].max())
+    if max_val is None:
+        max_val = max(1, df_province_summary['total_kejadian'].max())
     
     fig_map = px.choropleth(
         df_province_summary,
@@ -70,6 +71,8 @@ def create_map(df_province_summary, geojson_data):
     )
     
     fig_map.update_traces(
+        marker_line_color="#cbd5e1",  # Crisp border to distinguish adjacent/inactive provinces
+        marker_line_width=0.6,
         hovertemplate="<span style='font-size: 14px; font-weight: bold; color: #2563eb;'>%{customdata[0]}</span><br><br>" +
                       "Total Kejadian: <b>%{z:,}</b> kasus<br>" +
                       "Luas Area Banjir: <b>%{customdata[1]:,.1f}</b> km²<extra></extra>",

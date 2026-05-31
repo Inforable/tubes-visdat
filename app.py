@@ -46,6 +46,14 @@ if data_loaded:
             st.session_state.timeline_mode = "Per Tahun"
         if 'year_range' not in st.session_state:
             st.session_state.year_range = (2000, 2025)
+        if 'year_range_slider' not in st.session_state:
+            st.session_state.year_range_slider = (2000, 2025)
+            
+        # Sync states immediately if widget was interacted with
+        if 'year_slider' in st.session_state:
+            st.session_state.active_year = st.session_state.year_slider
+        if 'year_range_slider' in st.session_state:
+            st.session_state.year_range = st.session_state.year_range_slider
             
         # Get active range/year for branding header
         if st.session_state.timeline_mode == "Rentang Kustom":
@@ -105,27 +113,23 @@ if data_loaded:
                         "Pilih Rentang Tahun",
                         min_value=2000,
                         max_value=2025,
-                        value=st.session_state.year_range,
                         step=1,
                         key="year_range_slider",
                         label_visibility="collapsed"
                     )
                     start_year, end_year = year_range
-                    st.session_state.year_range = year_range
                 else:
                     st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Timeline Waktu (Live)</p>', unsafe_allow_html=True)
                     
                     slider_subcol, controls_subcol = st.columns([55, 45])
                     
                     with slider_subcol:
-                        # Dynamic key forces re-initialization from the value parameter on programmatical updates!
                         active_year = st.slider(
                             "Pilih Tahun",
                             min_value=2000,
                             max_value=2025,
-                            value=st.session_state.active_year,
                             step=1,
-                            key=f"year_slider_{st.session_state.active_year}",
+                            key="year_slider",
                             label_visibility="collapsed"
                         )
                         st.session_state.active_year = active_year
@@ -137,7 +141,9 @@ if data_loaded:
                         with c1:
                             if st.button("«", use_container_width=True, key="btn_back"):
                                 st.session_state.is_playing = False
-                                st.session_state.active_year = max(2000, st.session_state.active_year - 1) if st.session_state.active_year > 2000 else 2025
+                                new_year = max(2000, st.session_state.active_year - 1) if st.session_state.active_year > 2000 else 2025
+                                st.session_state.active_year = new_year
+                                st.session_state.year_slider = new_year
                                 st.rerun()
                         with c2:
                             is_playing = st.session_state.is_playing
@@ -149,7 +155,9 @@ if data_loaded:
                         with c3:
                             if st.button("»", use_container_width=True, key="btn_fwd"):
                                 st.session_state.is_playing = False
-                                st.session_state.active_year = st.session_state.active_year + 1 if st.session_state.active_year < 2025 else 2000
+                                new_year = st.session_state.active_year + 1 if st.session_state.active_year < 2025 else 2000
+                                st.session_state.active_year = new_year
+                                st.session_state.year_slider = new_year
                                 st.rerun()
                         with c4:
                             st.markdown(f"""
@@ -219,7 +227,12 @@ if data_loaded:
             
             if len(df_province_summary) > 0:
                 with st.container(border=True):
-                    fig_map = create_map(df_province_summary, geojson_data)
+                    # Calculate absolute maximums for consistent colorbar mapping
+                    if st.session_state.timeline_mode == "Rentang Kustom":
+                        max_val_map = int(df_prov_annual.groupby('Propinsi')['frekuensi_banjir'].sum().max())
+                    else:
+                        max_val_map = int(df_prov_annual['frekuensi_banjir'].max())
+                    fig_map = create_map(df_province_summary, geojson_data, max_val=max_val_map)
                     st.plotly_chart(fig_map, use_container_width=True)
             else:
                 st.info("Tidak ada data spasial untuk filter yang dipilih.")
@@ -268,6 +281,7 @@ if data_loaded:
             if next_year > 2025:
                 next_year = 2000  # Seamless wrap-around
             st.session_state.active_year = next_year
+            st.session_state.year_slider = next_year
             st.rerun()
 
     # Executing fragment dashboard
