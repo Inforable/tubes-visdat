@@ -79,48 +79,50 @@ if data_loaded:
             s = e = st.session_state.active_year
             year_badge = f"Tahun: {s}"
 
-        # ── TOP HERO: TITLE LEFT, FILTER RIGHT ─────────────────────────
+        # ── TOP HEADER ─────────────────────────────────────────────────
         provinces_available = sorted(df_prov_annual["Propinsi"].unique().tolist())
 
-        top_left, top_right = st.columns([1.35, 1.1], gap="large", vertical_alignment="top")
+        st.markdown('<div class="header-shell">', unsafe_allow_html=True)
+        header_container = st.container()
+        with header_container:
+            row1_left, row1_right = st.columns([1.45, 0.55], gap="large", vertical_alignment="center")
+            with row1_left:
+                st.markdown(
+                    """
+                    <div class="branding-banner header-branding">
+                        <h1 class="branding-title">Total Kejadian Banjir di Indonesia</h1>
+                        <p class="branding-subtitle">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            with row1_right:
+                st.markdown(
+                    f'<div class="year-badge header-year-badge">{year_badge}</div>',
+                    unsafe_allow_html=True,
+                )
 
-        with top_left:
-            st.markdown(
-                """
-                <div class="branding-banner" style="padding:0 !important;">
-                    <h1 class="branding-title">Total Kejadian Banjir di Indonesia</h1>
-                    <p class="branding-subtitle">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            st.markdown('<div class="header-divider"></div>', unsafe_allow_html=True)
 
-        with top_right:
-            st.markdown(f'<div class="year-badge" style="width: fit-content; margin-left:auto; margin-bottom: 0.5rem;">{year_badge}</div>', unsafe_allow_html=True)
-
-            mode_col, pulau_col, province_col = st.columns([0.9, 0.95, 1.05], gap="small")
-
-            with mode_col:
+            filter_cols = st.columns(3, gap="small")
+            with filter_cols[0]:
                 col_label("Mode Analisis")
                 mode_options = ["Per Tahun", "Rentang Kustom"]
-                selected_mode = st.segmented_control(
-                    "Mode",
+                selected_mode = st.selectbox(
+                    "Mode Analisis",
                     options=mode_options,
-                    default=st.session_state.timeline_mode
-                    if st.session_state.timeline_mode in mode_options
-                    else "Per Tahun",
+                    index=mode_options.index(st.session_state.timeline_mode)
+                    if st.session_state.timeline_mode in mode_options else 0,
                     label_visibility="collapsed",
-                    key="mode_segmented",
+                    key="mode_selectbox",
                 )
-                if selected_mode is None:
-                    selected_mode = st.session_state.timeline_mode
                 if selected_mode != st.session_state.timeline_mode:
                     st.session_state.timeline_mode = selected_mode
                     if selected_mode == "Rentang Kustom":
                         st.session_state.is_playing = False
                     st.rerun()
 
-            with pulau_col:
+            with filter_cols[1]:
                 col_label("Filter Pulau")
                 selected_pulau = st.selectbox(
                     "Pulau",
@@ -134,16 +136,22 @@ if data_loaded:
             province_scope = df_prov_annual if selected_pulau == ALL_PULAU_LABEL else df_prov_annual[df_prov_annual["Pulau"] == selected_pulau]
             province_options = sorted(province_scope["Propinsi"].dropna().unique().tolist())
 
-            with province_col:
+            with filter_cols[2]:
                 col_label("Filter Provinsi")
-                selected_provinces = st.multiselect(
+                selected_provinces = st.selectbox(
                     "Provinsi",
-                    options=province_options,
-                    default=[],
-                    placeholder="Semua Provinsi",
+                    options=["Semua Provinsi"] + province_options,
+                    index=0,
                     label_visibility="collapsed",
-                    key="province_filter",
+                    key="province_selectbox",
                 )
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        if selected_provinces == "Semua Provinsi":
+            selected_provinces = []
+        else:
+            selected_provinces = [selected_provinces]
 
         st.markdown('<div class="section-gap-lg"></div>', unsafe_allow_html=True)
 

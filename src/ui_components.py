@@ -89,6 +89,70 @@ LIGHT_CSS = """
     .filter-col-label { font-size: 0.7rem !important; font-weight: 700 !important; letter-spacing: 0.8px !important; text-transform: uppercase !important; color: #8290a8 !important; margin: 0 0 8px 0 !important; }
     .chart-title { font-size: 1.1rem !important; font-weight: 700 !important; color: #0c1425 !important; margin: 0 0 10px 0 !important; display: flex !important; align-items: center !important; }
 
+    .header-shell {
+        background: #ffffff !important;
+        border: 1px solid #e4eaf3 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 26px rgba(12, 20, 37, 0.06) !important;
+        padding: 1.1rem 1.15rem 1rem 1.15rem !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    .header-shell [data-testid="stVerticalBlock"] {
+        gap: 0.65rem !important;
+    }
+
+    .header-branding {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .header-year-badge {
+        width: fit-content !important;
+        margin-left: auto !important;
+        margin-right: 0 !important;
+        margin-bottom: 0 !important;
+        justify-self: end !important;
+    }
+
+    .header-divider {
+        height: 1px !important;
+        background: linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0)) !important;
+        margin: 0.15rem 0 0.3rem 0 !important;
+    }
+
+    .header-shell [data-testid="stHorizontalBlock"] {
+        gap: 0.75rem !important;
+        align-items: end !important;
+    }
+
+    .header-shell [data-testid="stSelectbox"],
+    .header-shell [data-testid="stSelectbox"] > div,
+    .header-shell [data-baseweb="select"] {
+        width: 100% !important;
+        margin-top: 0 !important;
+    }
+
+    .header-shell [data-testid="stSelectbox"] label,
+    .header-shell .stSelectbox label {
+        display: none !important;
+    }
+
+    .header-shell [data-testid="stSelectbox"] > div:first-child,
+    .header-shell [data-baseweb="select"] > div:first-child {
+        min-height: 40px !important;
+        align-items: center !important;
+    }
+
+    .header-shell .stSelectbox {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .header-shell .stSelectbox > div {
+        margin-top: 0 !important;
+    }
+
     .top-hero-row {
         display: flex !important;
         align-items: flex-start !important;
