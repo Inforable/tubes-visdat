@@ -16,13 +16,6 @@ if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
     exit 1
 fi
 
-# Cek certbot terinstall di host
-if ! command -v certbot &> /dev/null; then
-    echo "ERROR: certbot belum terinstall di VPS."
-    echo "  Jalankan: sudo apt update && sudo apt install certbot -y"
-    exit 1
-fi
-
 rsa_key_size=4096
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -34,28 +27,38 @@ echo -e "${GREEN}  SSL Init untuk ${DOMAIN}              ${NC}"
 echo -e "${GREEN}=========================================${NC}"
 echo ""
 
-# 1. Setup webroot
-mkdir -p ./certbot-www
+# Helper: cek file valid (ada dan size > 0)
+file_valid() {
+    [ -s "$1" ]
+}
 
-# 2. Download TLS parameters jika belum ada
-if [ ! -e "/etc/letsencrypt/options-ssl-nginx.conf" ]; then
-    sudo mkdir -p /etc/letsencrypt
-    curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf | sudo tee /etc/letsencrypt/options-ssl-nginx.conf > /dev/null
-    curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/ssl-dhparams.pem | sudo tee /etc/letsencrypt/ssl-dhparams.pem > /dev/null
-    echo -e "${GREEN}[1/4] TLS parameters diunduh ke host.${NC}"
+# 1. Setup direktori
+mkdir -p ./certbot-www
+sudo mkdir -p /etc/letsencrypt
+
+# 2. Download/fix TLS parameters jika belum ada atau rusak (size 0)
+if ! file_valid "/etc/letsencrypt/options-ssl-nginx.conf" || ! file_valid "/etc/letsencrypt/ssl-dhparams.pem"; then
+    curl -sL https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf | sudo tee /etc/letsencrypt/options-ssl-nginx.conf > /dev/null
+    curl -sL https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/ssl-dhparams.pem | sudo tee /etc/letsencrypt/ssl-dhparams.pem > /dev/null
+    echo -e "${GREEN}[1/3] TLS parameters diunduh ke host.${NC}"
 else
-    echo -e "${GREEN}[1/4] TLS parameters sudah ada, skip.${NC}"
+    echo -e "${GREEN}[1/3] TLS parameters OK, skip.${NC}"
 fi
 
-# 3. Cek certificate existing
-if [ -d "/etc/letsencrypt/live/${DOMAIN}" ] && [ -e "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" ]; then
-    echo -e "${YELLOW}[2/4] Certificate sudah ada di host.${NC}"
+# 3. Cek certificate existing → kalau ada, langsung start docker dan selesai
+if [ -d "/etc/letsencrypt/live/${DOMAIN}" ] && file_valid "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem"; then
+    echo -e "${YELLOW}[2/3] Certificate sudah ada di host. Start docker ...${NC}"
     docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+    echo ""
+    echo -e "${GREEN}============================================================${NC}"
+    echo -e "${GREEN}  Stack aktif!                                             ${NC}"
+    echo -e "${GREEN}  https://${DOMAIN}                                       ${NC}"
+    echo -e "${GREEN}============================================================${NC}"
     exit 0
 fi
 
 # 4. Jalankan nginx sementara (HTTP-only) untuk ACME challenge
-echo -e "${YELLOW}[2/4] Menyalakan nginx sementara untuk ACME ...${NC}"
+echo -e "${YELLOW}[2/3] Menyalakan nginx sementara untuk ACME ...${NC}"
 
 cat > ./nginx/init.conf <<EOF
 server {
@@ -73,7 +76,7 @@ docker run -d --rm --name nginx-temp \
     nginx:alpine
 
 # 5. Request certificate via certbot DI HOST (webroot)
-echo -e "${YELLOW}[3/4] Requesting Let's Encrypt certificate via host certbot ...${NC}"
+echo -e "${YELLOW}[3/3] Requesting Let's Encrypt certificate via host certbot ...${NC}"
 
 sudo certbot certonly --webroot \
     -w "$(pwd)/certbot-www" \
@@ -84,7 +87,6 @@ sudo certbot certonly --webroot \
     --non-interactive
 
 # 6. Cleanup & start production stack
-echo -e "${YELLOW}[4/4] Cleanup & start production stack ...${NC}"
 docker stop nginx-temp 2>/dev/null || true
 rm ./nginx/init.conf
 

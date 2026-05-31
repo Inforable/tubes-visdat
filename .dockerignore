@@ -43,11 +43,9 @@ ENV/
 .env
 nginx/init.conf
 
-# Certbot webroot (acme challenge)
+# Certbot data & webroot
+certbot-data/
 certbot-www/
-
-# Streamlit local cache
-.streamlit/cache/
 
 # Streamlit local cache
 .streamlit/cache/
