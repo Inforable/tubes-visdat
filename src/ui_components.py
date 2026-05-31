@@ -154,6 +154,49 @@ LIGHT_CSS = """
     .takeaways-title { font-size: 1rem !important; font-weight: 700 !important; color: #0c1425 !important; margin-bottom: 12px !important; display: flex !important; align-items: center !important; gap: 8px !important; }
     .takeaway-item { padding: 10px 0 !important; border-bottom: 1px solid #edf1f7 !important; font-size: 0.875rem !important; color: #374258 !important; }
     .takeaway-item:last-child { border-bottom: none !important; padding-bottom: 0 !important; }
+
+    .insight-card {
+        background: #ffffff !important;
+        border: 0px solid transparent !important;
+        border-radius: 12px !important;
+        box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.04) !important;
+        padding: 18px 18px 16px 18px !important;
+        min-height: 190px !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .insight-head {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        font-size: 0.78rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.6px !important;
+        text-transform: uppercase !important;
+        color: #8290a8 !important;
+    }
+
+    .insight-emoji {
+        font-size: 1.05rem !important;
+        line-height: 1 !important;
+    }
+
+    .insight-value {
+        font-size: 1.45rem !important;
+        font-weight: 800 !important;
+        color: #0c1425 !important;
+        line-height: 1.1 !important;
+    }
+
+    .insight-body {
+        font-size: 0.88rem !important;
+        color: #475569 !important;
+        line-height: 1.5 !important;
+    }
     </style>
 """
 
@@ -183,6 +226,16 @@ def render_chart_title(icon_name: str, label: str) -> str:
 
 def render_year_display(year: int) -> str:
     return f'<div class="year-display">{year}</div>'
+
+
+def render_insight_card(emoji: str, label: str, value: str, body: str) -> str:
+    return f"""
+        <div class="insight-card">
+            <div class="insight-head"><span class="insight-emoji">{emoji}</span><span>{label}</span></div>
+            <div class="insight-value">{value}</div>
+            <div class="insight-body">{body}</div>
+        </div>
+    """
 
 def render_takeaways() -> str:
     return f"""

@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
 import time
-from src.data_loader import load_data, load_geojson
+from src.data_loader import load_data, load_geojson, PULAU_OPTIONS, ALL_PULAU_LABEL
 from src.ui_components import (
     LIGHT_CSS,
     render_kpi_card,
-    render_takeaways,
     render_chart_title,
+    render_insight_card,
 )
 from src.charts import create_map, create_bar, create_line
 
@@ -48,13 +48,14 @@ if data_loaded:
     @st.fragment
     def render_dashboard():
         defaults = {
-            "active_year": 2002,
-            "year_slider": 2002,
+            "active_year": 2025,
+            "year_slider": 2025,
             "pending_year_slider": None,
             "is_playing": False,
-            "timeline_mode": "Per Tahun",
+            "timeline_mode": "Rentang Kustom",
             "year_range": (2000, 2025),
             "year_range_slider": (2000, 2025),
+            "pulau_filter": ALL_PULAU_LABEL,
         }
         for k, v in defaults.items():
             if k not in st.session_state:
@@ -80,7 +81,7 @@ if data_loaded:
         # ── TOP HERO: TITLE LEFT, FILTER RIGHT ─────────────────────────
         provinces_available = sorted(df_prov_annual["Propinsi"].unique().tolist())
 
-        top_left, top_right = st.columns([1.35, 1], gap="large", vertical_alignment="top")
+        top_left, top_right = st.columns([1.35, 1.1], gap="large", vertical_alignment="top")
 
         with top_left:
             st.markdown(
@@ -96,7 +97,7 @@ if data_loaded:
         with top_right:
             st.markdown(f'<div class="year-badge" style="width: fit-content; margin-left:auto; margin-bottom: 0.5rem;">{year_badge}</div>', unsafe_allow_html=True)
 
-            mode_col, province_col = st.columns([0.95, 1.05], gap="small")
+            mode_col, pulau_col, province_col = st.columns([0.9, 0.95, 1.05], gap="small")
 
             with mode_col:
                 col_label("Mode Analisis")
@@ -118,14 +119,29 @@ if data_loaded:
                         st.session_state.is_playing = False
                     st.rerun()
 
+            with pulau_col:
+                col_label("Filter Pulau")
+                selected_pulau = st.selectbox(
+                    "Pulau",
+                    options=PULAU_OPTIONS,
+                    index=PULAU_OPTIONS.index(st.session_state.pulau_filter)
+                    if st.session_state.pulau_filter in PULAU_OPTIONS else 0,
+                    label_visibility="collapsed",
+                    key="pulau_filter",
+                )
+
+            province_scope = df_prov_annual if selected_pulau == ALL_PULAU_LABEL else df_prov_annual[df_prov_annual["Pulau"] == selected_pulau]
+            province_options = sorted(province_scope["Propinsi"].dropna().unique().tolist())
+
             with province_col:
                 col_label("Filter Provinsi")
                 selected_provinces = st.multiselect(
                     "Provinsi",
-                    options=provinces_available,
+                    options=province_options,
                     default=[],
                     placeholder="Semua Provinsi",
                     label_visibility="collapsed",
+                    key="province_filter",
                 )
 
         st.markdown('<div class="section-gap-lg"></div>', unsafe_allow_html=True)
@@ -191,13 +207,13 @@ if data_loaded:
         df_filtered = df_prov_annual[
             (df_prov_annual["year"] >= s) & (df_prov_annual["year"] <= e)
         ]
-        df_filtered_agg = (
-            df_filtered[df_filtered["Propinsi"].isin(selected_provinces)]
-            if selected_provinces else df_filtered
-        )
+        if selected_pulau != ALL_PULAU_LABEL:
+            df_filtered = df_filtered[df_filtered["Pulau"] == selected_pulau]
+        if selected_provinces:
+            df_filtered = df_filtered[df_filtered["Propinsi"].isin(selected_provinces)]
 
         df_province_summary = (
-            df_filtered_agg.groupby("Propinsi")
+            df_filtered.groupby("Propinsi")
             .agg(
                 total_kejadian=("frekuensi_banjir", "sum"),
                 total_area_km2=("total_area_km2", "sum"),
@@ -206,7 +222,8 @@ if data_loaded:
             .reset_index()
         )
 
-        df_master = pd.DataFrame({"Propinsi": provinces_available})
+        master_provinces = province_options if (selected_pulau != ALL_PULAU_LABEL or selected_provinces) else provinces_available
+        df_master = pd.DataFrame({"Propinsi": master_provinces})
         df_province_summary = pd.merge(df_master, df_province_summary, on="Propinsi", how="left")
         df_province_summary["total_kejadian"] = df_province_summary["total_kejadian"].fillna(0).astype(int)
         df_province_summary["total_area_km2"] = df_province_summary["total_area_km2"].fillna(0.0)
@@ -241,12 +258,14 @@ if data_loaded:
             with map_col:
                 st.markdown(render_chart_title("map_search", "Peta Distribusi Kejadian Banjir Regional"), unsafe_allow_html=True)
 
-                max_val_map = (
-                    int(df_prov_annual.groupby("Propinsi")["frekuensi_banjir"].sum().max())
-                    if st.session_state.timeline_mode == "Rentang Kustom"
-                    else int(df_prov_annual["frekuensi_banjir"].max())
+                map_min = int(df_province_summary["total_kejadian"].min()) if len(df_province_summary) > 0 else 0
+                map_max = int(df_province_summary["total_kejadian"].max()) if len(df_province_summary) > 0 else 1
+                fig_map = create_map(
+                    df_province_summary,
+                    geojson_data,
+                    range_color=(map_min, map_max),
+                    zoom_to_selection=(selected_pulau != ALL_PULAU_LABEL or len(selected_provinces) > 0),
                 )
-                fig_map = create_map(df_province_summary, geojson_data, max_val=max_val_map)
 
                 fig_map.update_layout(
                     height=360,
@@ -277,10 +296,7 @@ if data_loaded:
         st.markdown('<div class="section-gap-lg"></div>', unsafe_allow_html=True)
 
         # ── LINE — FULL WIDTH BELOW ────────────────────────────────────
-        df_line_filtered = (
-            df_prov_annual[df_prov_annual["Propinsi"].isin(selected_provinces)]
-            if selected_provinces else df_prov_annual
-        )
+        df_line_filtered = df_filtered
         df_yearly_trend = (
             df_line_filtered.groupby("year")
             .agg(total_kejadian=("frekuensi_banjir", "sum"))
@@ -307,6 +323,35 @@ if data_loaded:
             st.markdown(render_chart_title("chart_data", "Tren Kejadian Banjir Tahunan"), unsafe_allow_html=True)
             st.info("Tidak ada data untuk diagram garis tren.")
 
+        st.divider()
+
+        st.markdown(render_chart_title("lightbulb", "Informasi Kunci & Wawasan Data"), unsafe_allow_html=True)
+
+        if len(df_yearly_trend) > 0:
+            first_window = df_yearly_trend.head(min(3, len(df_yearly_trend)))['total_kejadian'].mean()
+            last_window = df_yearly_trend.tail(min(3, len(df_yearly_trend)))['total_kejadian'].mean()
+            if first_window and first_window > 0:
+                trend_value = f"{((last_window - first_window) / first_window) * 100:+.0f}%"
+                trend_body = "Rata-rata 3 tahun terakhir dibanding 3 tahun awal pada filter terpilih."
+            else:
+                trend_value = "Stabil"
+                trend_body = "Data awal terlalu kecil untuk mengukur eskalasi secara andal."
+        else:
+            trend_value = "N/A"
+            trend_body = "Tidak ada data tren untuk filter terpilih."
+
+        recommendation_value = selected_pulau if selected_pulau != ALL_PULAU_LABEL else "Prioritas Jawa"
+
+        insight_cols = st.columns(4)
+        with insight_cols[0]:
+            st.markdown(render_insight_card("🚨", "Total Beban Risiko", f"{total_events:,}", "Akumulasi kejadian banjir pada wilayah dan rentang waktu yang dipilih."), unsafe_allow_html=True)
+        with insight_cols[1]:
+            st.markdown(render_insight_card("📍", "Konsentrasi Geografis", max_prov_name, f"Provinsi dengan kejadian tertinggi: {max_prov_val:,} kasus."), unsafe_allow_html=True)
+        with insight_cols[2]:
+            st.markdown(render_insight_card("📈", "Tren Eskalasi", trend_value, trend_body), unsafe_allow_html=True)
+        with insight_cols[3]:
+            st.markdown(render_insight_card("💡", "Rekomendasi", recommendation_value, "Fokus pada zona dengan kejadian tertinggi, lalu turun ke level provinsi untuk mitigasi spesifik."), unsafe_allow_html=True)
+
         # ── PLAYBACK LOOP ───────────────────────────────────────────────
         if st.session_state.is_playing and st.session_state.timeline_mode == "Per Tahun":
             time.sleep(0.7)
@@ -317,6 +362,3 @@ if data_loaded:
             st.rerun()
 
     render_dashboard()
-
-    # TAKEAWAYS
-    st.markdown(render_takeaways(), unsafe_allow_html=True)
