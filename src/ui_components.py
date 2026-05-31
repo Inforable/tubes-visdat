@@ -90,64 +90,39 @@ LIGHT_CSS = """
     .chart-title { font-size: 1.1rem !important; font-weight: 700 !important; color: #0c1425 !important; margin: 0 0 10px 0 !important; display: flex !important; align-items: center !important; }
 
     .header-shell {
-        background: #f8fafc !important;
+        background: #ffffff !important;
+        border: 1px solid #e4eaf3 !important;
         border-radius: 12px !important;
-        box-shadow: inset 0 0 0 1px #e4eaf3 !important;
-        padding: 1rem 1.05rem 0.95rem 1.05rem !important;
+        box-shadow: 0 8px 26px rgba(12, 20, 37, 0.06) !important;
+        padding: 1.1rem 1.15rem 1rem 1.15rem !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    .header-shell [data-testid="stVerticalBlock"] {
+        gap: 0.65rem !important;
+    }
+
+    .header-branding {
+        padding: 0 !important;
         margin: 0 !important;
     }
 
-    .header-shell .header-title-row {
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: flex-start !important;
-        gap: 1rem !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    .header-shell .header-title-block {
-        min-width: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    .header-shell .branding-title {
-        font-size: 1.75rem !important;
-        font-weight: 800 !important;
-        color: #0c1425 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        line-height: 1.1 !important;
-    }
-
-    .header-shell .branding-subtitle {
-        font-size: 0.9rem !important;
-        font-weight: 400 !important;
-        color: #64748b !important;
-        margin: 0.2rem 0 0 0 !important;
-        padding: 0 !important;
-        line-height: 1.35 !important;
-    }
-
-    .header-shell .header-year-badge {
+    .header-year-badge {
         width: fit-content !important;
         margin-left: auto !important;
         margin-right: 0 !important;
-        margin-top: 0.15rem !important;
-        white-space: nowrap !important;
-        background: rgba(61,110,245,0.08) !important;
+        margin-bottom: 0 !important;
+        justify-self: end !important;
     }
 
-    .header-shell .header-divider {
+    .header-divider {
         height: 1px !important;
-        width: 100% !important;
         background: linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0)) !important;
-        margin: 0.45rem 0 0.35rem 0 !important;
+        margin: 0.15rem 0 0.3rem 0 !important;
     }
 
     .header-shell [data-testid="stHorizontalBlock"] {
-        gap: 0.65rem !important;
+        gap: 0.75rem !important;
         align-items: end !important;
     }
 
@@ -167,27 +142,109 @@ LIGHT_CSS = """
     .header-shell [data-baseweb="select"] > div:first-child {
         min-height: 40px !important;
         align-items: center !important;
-        background-color: #ffffff !important;
+    }
+
+    .header-shell .stSelectbox {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .header-shell .stSelectbox > div {
+        margin-top: 0 !important;
+    }
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 26px rgba(12, 20, 37, 0.06) !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        padding: 1rem 1.05rem 0.9rem 1.05rem !important;
+    }
+
+    .header-title-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .header-title-block {
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .header-year-badge {
+        width: fit-content !important;
+        margin-left: auto !important;
+        margin-right: 0 !important;
+        margin-top: 0.1rem !important;
+        white-space: nowrap !important;
+    }
+
+    .header-divider {
+        height: 1px !important;
+        width: 100% !important;
+        background: linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0)) !important;
+        margin: 0.45rem 0 0.35rem 0 !important;
+    }
+
+    .branding-title {
+        font-size: 1.75rem !important;
+        font-weight: 800 !important;
+        color: #0c1425 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1.1 !important;
+    }
+
+    .branding-subtitle {
+        font-size: 0.9rem !important;
+        font-weight: 400 !important;
+        color: #8290a8 !important;
+        margin: 0.2rem 0 0 0 !important;
+        padding: 0 !important;
+        line-height: 1.35 !important;
+    }
+
+    .header-divider {
+        height: 1px !important;
+        width: 100% !important;
+        background: linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0)) !important;
+        margin: 0.4rem 0 0.35rem 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"] {
+        gap: 0.65rem !important;
+        align-items: end !important;
+    }
+
+    [data-testid="stSelectbox"] {
+        margin-top: 0 !important;
+    }
+
+    [data-testid="stSelectbox"] > div,
+    [data-baseweb="select"] {
+        width: 100% !important;
+        margin-top: 0 !important;
+    }
+
+    [data-testid="stSelectbox"] label,
+    .stSelectbox label {
+        display: none !important;
+    }
+
+    [data-testid="stSelectbox"] > div:first-child,
+    [data-baseweb="select"] > div:first-child {
+        min-height: 40px !important;
+        align-items: center !important;
         border-radius: 8px !important;
-        border: 1px solid #dbe3ee !important;
-        color: #2563eb !important;
     }
 
-    .header-shell [data-testid="stSelectbox"] [data-baseweb="select"] * {
-        color: #2563eb !important;
-    }
-
-    .header-shell [data-testid="stSelectbox"] [aria-selected="true"],
-    .header-shell [data-testid="stSelectbox"] [role="option"] {
-        color: #2563eb !important;
-    }
-
-    .header-shell [data-testid="stSelectbox"] svg {
-        color: #2563eb !important;
-        fill: #2563eb !important;
-    }
-
-    .header-shell .filter-col-label {
+    .filter-col-label {
         margin: 0 0 0.35rem 0 !important;
     }
 

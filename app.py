@@ -72,55 +72,19 @@ if data_loaded:
 
         with st.container(border=True):
             st.markdown(
-                """
-                <style>
-                div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type {
-                    background-color: #F8FAFC;
-                }
-                div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type > div {
-                    padding: 1rem 1.05rem 0.95rem 1.05rem;
-                }
-                div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"] > div:first-child,
-                div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-baseweb="select"] > div:first-child {
-                    background-color: #FFFFFF;
-                    border: 1px solid #D9E2EC;
-                    border-radius: 8px;
-                    color: #2563EB;
-                    min-height: 40px;
-                    align-items: center;
-                }
-                div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"] [data-baseweb="select"] * {
-                    color: #2563EB;
-                }
-                div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stSelectbox"] label,
-                div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type .stSelectbox label {
-                    display: none;
-                }
-                div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type [data-testid="stHorizontalBlock"] {
-                    gap: 0.65rem;
-                    align-items: end;
-                }
-                div[data-testid="stVerticalBlockBorderWrapper"]:first-of-type .filter-col-label {
-                    margin: 0 0 0.35rem 0;
-                }
-                </style>
-                """,
-                unsafe_allow_html=True,
-            )
-            st.markdown(
                 f"""
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin:0;padding:0;">
-                    <div style="min-width:0;margin:0;padding:0;">
-                        <div style="font-size:1.75rem;font-weight:800;line-height:1.1;color:#0c1425;margin:0;padding:0;">Total Kejadian Banjir di Indonesia</div>
-                        <div style="font-size:0.9rem;line-height:1.35;color:#64748b;margin:0.2rem 0 0 0;padding:0;">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</div>
+                <div class="header-title-row">
+                    <div class="header-title-block">
+                        <div class="branding-title">Total Kejadian Banjir di Indonesia</div>
+                        <div class="branding-subtitle">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</div>
                     </div>
-                    <div style="width:fit-content;margin-left:auto;margin-top:0.15rem;white-space:nowrap;font-size:0.875rem;font-weight:600;color:#3d6ef5;background:rgba(61,110,245,0.08);padding:6px 18px;border-radius:8px;border:none;">{year_badge}</div>
+                    <div class="year-badge header-year-badge">{year_badge}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-            st.markdown('<div style="height:1px;width:100%;background:linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0));margin:0.45rem 0 0.35rem 0;"></div>', unsafe_allow_html=True)
+            st.markdown('<div class="header-divider"></div>', unsafe_allow_html=True)
 
             filter_cols = st.columns(3, gap="small")
             with filter_cols[0]:
