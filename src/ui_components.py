@@ -1,12 +1,8 @@
 import base64
 
-# ==============================================================================
-# SVG ICON HELPER
-# ==============================================================================
 _SVG_CACHE: dict = {}
 
-def svg(name: str, size: int = 18, color: str = "#3b82f6") -> str:
-    """Load an SVG from assets/, recolor it, and return an inline <img> tag."""
+def svg(name: str, size: int = 16, color: str = "#3d6ef5") -> str:
     path = f"assets/{name}_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg"
     if path not in _SVG_CACHE:
         try:
@@ -16,315 +12,317 @@ def svg(name: str, size: int = 18, color: str = "#3b82f6") -> str:
             return ""
     content = _SVG_CACHE[path].replace('fill="#000000"', f'fill="{color}"')
     b64 = base64.b64encode(content.encode()).decode()
-    return f'<img src="data:image/svg+xml;base64,{b64}" width="{size}" height="{size}" style="vertical-align:middle; display:inline-block; margin-right:4px;"/>'
+    return f'<img src="data:image/svg+xml;base64,{b64}" width="{size}" height="{size}" style="vertical-align:middle;display:inline-block;margin-right:5px;"/>'
 
-# ==============================================================================
-# PREMIUM LIGHT MODE STYLING SYSTEM
-# ==============================================================================
 LIGHT_CSS = """
     <style>
-    /* Hide default Streamlit top header and footer */
-    [data-testid="stHeader"] {
-        display: none !important;
-    }
-    footer {
-        visibility: hidden !important;
-        height: 0 !important;
-        padding: 0 !important;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap');
+
+    /* 1. RESET GLOBAL & HIDE DEFAULT ELEMENTS */
+    [data-testid="stHeader"], footer { display: none !important; visibility: hidden !important; height: 0 !important; }
+    * { font-family: 'Geist', sans-serif !important; }
     
-    /* Main Layout Spacing Optimization */
     .stApp {
-        background-color: #f8fafc;
-        color: #0f172a;
-        font-family: 'Inter', 'Roboto', sans-serif;
+        background-color: #edf1f7 !important;
+        color: #0c1425 !important;
     }
+
+    /* 2. SPACING & GHOST MARGIN FIX */
     .block-container {
-        padding-top: 1.25rem !important;
-        padding-bottom: 0.75rem !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
+        padding: 1rem !important;
+        max-width: 100% !important;
     }
     
-    /* Global Spacing and Gap Compression */
-    [data-testid="stVerticalBlock"] > div {
-        padding-top: 0.12rem !important;
-        padding-bottom: 0.12rem !important;
-    }
     [data-testid="stVerticalBlock"] {
-        gap: 0.35rem !important;
+        gap: 0.75rem !important;
     }
     
-    /* Plain transparent inline branding header */
-    .branding-banner {
-        background: transparent !important;
-        border: none !important;
-        padding: 0px 0px 10px 0px !important;
-        margin-bottom: 8px !important;
-        box-shadow: none !important;
+    .element-container .stMarkdown p {
+        margin-bottom: 0 !important;
     }
-    .branding-title {
-        color: #0f172a !important;
-        font-size: 1.50rem !important;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-        margin: 0;
-        padding: 0;
-        text-transform: uppercase;
+    .stMarkdown div {
+        margin-bottom: 0 !important;
     }
-    .branding-subtitle {
-        color: #475569 !important;
-        font-size: 0.85rem !important;
-        margin-top: 2px !important;
-        font-weight: 400;
+
+    /* 3. PEMBUNUHAN BORDER ABU-ABU SECARA TOTAL (EXTREME OVERRIDE) */
+    div[data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
     }
     
-    /* Custom Card Style for KPIs */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        border: 0px solid transparent !important; /* Force kill border */
+        border-top: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        border-left: none !important;
+        border-radius: 12px !important;
+        box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.04) !important; /* Shadow halus sebagai pengganti border */
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        padding: 1.25rem !important;
+        background-color: transparent !important;
+    }
+
+    /* 4. KPI CARDS UI - TANPA BORDER */
     .metric-card {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-left: 4px solid #2563eb !important;
-        border-radius: 10px;
-        padding: 12px 16px !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-        text-align: left;
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        border: 0px solid transparent !important;
+        border-radius: 12px !important;
+        padding: 20px 24px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.04) !important;
     }
-    .metric-card:hover {
-        transform: translateY(-2px);
-        border-color: #3b82f6;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+    .metric-label { font-size: 0.75rem !important; font-weight: 700 !important; color: #8290a8 !important; margin-bottom: 8px !important; text-transform: uppercase !important; display: flex !important; align-items: center !important; }
+    .metric-value { font-size: 2.2rem !important; font-weight: 800 !important; color: #0c1425 !important; line-height: 1 !important; }
+
+    /* 5. TYPOGRAPHY & HEADER */
+    .branding-banner { padding: 0 10px 10px 10px !important; margin: 0 !important; }
+    .branding-title { font-size: 2rem !important; font-weight: 800 !important; color: #0c1425 !important; margin: 0 0 4px 0 !important; line-height: 1.1 !important; }
+    .branding-subtitle { font-size: 0.9rem !important; font-weight: 400 !important; color: #8290a8 !important; margin: 0 !important; }
+    .year-badge { font-size: 0.875rem !important; font-weight: 600 !important; color: #3d6ef5 !important; background: rgba(61,110,245,0.08) !important; padding: 6px 18px !important; border-radius: 8px !important; border: none !important; }
+    .filter-col-label { font-size: 0.7rem !important; font-weight: 700 !important; letter-spacing: 0.8px !important; text-transform: uppercase !important; color: #8290a8 !important; margin: 0 0 8px 0 !important; }
+    .chart-title { font-size: 1.1rem !important; font-weight: 700 !important; color: #0c1425 !important; margin: 0 0 10px 0 !important; display: flex !important; align-items: center !important; }
+
+    .top-hero-row {
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        gap: 1.5rem !important;
+        margin-bottom: 0.5rem !important;
     }
-    .metric-card-outline {
-        background-color: #ffffff;
-        border: 2px solid #2563eb !important;
-        border-radius: 10px;
-        padding: 12px 16px !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-        text-align: left;
+
+    .top-hero-left {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
     }
-    .metric-card-outline:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+
+    .top-hero-right {
+        flex: 0 0 28% !important;
+        min-width: 280px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.55rem !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
     }
-    .metric-label {
+
+    .compact-filter-panel {
+        background: #ffffff !important;
+        border: 1px solid #dce2ed !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 16px rgba(12, 20, 37, 0.04) !important;
+        padding: 0.9rem 1rem !important;
+    }
+
+    .compact-filter-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.6rem !important;
+    }
+
+    .compact-filter-panel .filter-col-label {
+        margin-bottom: 6px !important;
+        font-size: 0.68rem !important;
+    }
+
+    /* 6. PLOTLY FULL WIDTH HACKS & IFRAME BORDER KILLER */
+    iframe {
+        border: none !important; /* Membunuh border bawaan iframe browser */
+    }
+    iframe[title="streamlit_plotly_events.plotly_events"], .stPlotlyChart iframe {
+        width: 100% !important;
+        border: none !important;
+    }
+    .stPlotlyChart { margin-bottom: -1rem !important; }
+    
+    /* 7. UI CONTROLS - TANPA BORDER ABU */
+    [data-baseweb="select"] > div:first-child { background-color: #f5f7fb !important; border: none !important; border-radius: 8px !important; box-shadow: 0 1px 4px rgba(0,0,0,0.02) !important; }
+    .stApp div.stButton > button { background-color: #ffffff !important; color: #374258 !important; border: none !important; border-radius: 8px !important; font-weight: 600 !important; font-size: 0.875rem !important; padding: 3px 10px !important; height: 32px !important; box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important; }
+    div[data-testid="stSegmentedControl"],
+    div[data-testid="stSegmentedControl"] > div,
+    div[data-testid="stSegmentedControl"] div[role="radiogroup"],
+    div[data-baseweb="radio"] [role="radiogroup"] {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        gap: 0 !important;
+        overflow: hidden !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button,
+    div[data-baseweb="radio"] [role="radiogroup"] label {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
+        border: 1px solid #d5ddea !important;
+        background: #f7f9fc !important;
+        color: #334155 !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:not(:last-child) {
+        border-right: 0 !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:first-child,
+    div[data-baseweb="radio"] [role="radiogroup"] label:first-child {
+        border-radius: 8px 0 0 8px !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:last-child,
+    div[data-baseweb="radio"] [role="radiogroup"] label:last-child {
+        border-radius: 0 8px 8px 0 !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button[aria-checked="true"],
+    div[data-baseweb="radio"] [role="radiogroup"] input:checked + div,
+    div[data-baseweb="radio"] [role="radiogroup"] label:has(input:checked) {
+        background-color: #3d6ef5 !important;
+        color: #ffffff !important;
+        border-color: #3d6ef5 !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:focus-visible,
+    div[data-baseweb="radio"] [role="radiogroup"] label:focus-within {
+        outline: 2px solid rgba(61,110,245,0.35) !important;
+        outline-offset: 2px !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:hover,
+    div[data-baseweb="radio"] [role="radiogroup"] label:hover {
+        border-color: #b9c7f6 !important;
+        background: #eef3ff !important;
+    }
+
+    @media (max-width: 640px) {
+        div[data-testid="stSegmentedControl"],
+        div[data-testid="stSegmentedControl"] > div,
+        div[data-testid="stSegmentedControl"] div[role="radiogroup"],
+        div[data-baseweb="radio"] [role="radiogroup"] {
+            flex-direction: column !important;
+        }
+
+        div[data-testid="stSegmentedControl"] button,
+        div[data-baseweb="radio"] [role="radiogroup"] label {
+            width: 100% !important;
+            border-right: 1px solid #d5ddea !important;
+        }
+
+        div[data-testid="stSegmentedControl"] button:first-child,
+        div[data-baseweb="radio"] [role="radiogroup"] label:first-child {
+            border-radius: 8px 8px 0 0 !important;
+        }
+
+        div[data-testid="stSegmentedControl"] button:last-child,
+        div[data-baseweb="radio"] [role="radiogroup"] label:last-child {
+            border-radius: 0 0 8px 8px !important;
+            border-top: 0 !important;
+        }
+
+        div[data-testid="stSegmentedControl"] button:not(:last-child),
+        div[data-baseweb="radio"] [role="radiogroup"] label:not(:last-child) {
+            border-right: 1px solid #d5ddea !important;
+            border-bottom: 0 !important;
+        }
+    }
+    div[data-testid="stSlider"] div[role="slider"] { background-color: #3d6ef5 !important; border: 2px solid #ffffff !important; }
+    div[data-testid="stSlider"] div[data-testid="stSliderTrack"] > div { background-color: #3d6ef5 !important; }
+    
+    .year-display { font-size: 0.9rem !important; font-weight: 700 !important; color: #0fa876 !important; background: rgba(15,168,118,0.09) !important; border: none !important; padding: 5px 10px !important; border-radius: 8px !important; text-align: center !important; }
+    .takeaways-box { background-color: #ffffff !important; border: none !important; border-radius: 12px !important; padding: 24px 28px !important; margin-top: 10px !important; box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.04) !important; }
+    .takeaways-title { font-size: 1rem !important; font-weight: 700 !important; color: #0c1425 !important; margin-bottom: 12px !important; display: flex !important; align-items: center !important; gap: 8px !important; }
+    .takeaway-item { padding: 10px 0 !important; border-bottom: 1px solid #edf1f7 !important; font-size: 0.875rem !important; color: #374258 !important; }
+    .takeaway-item:last-child { border-bottom: none !important; padding-bottom: 0 !important; }
+
+    .insight-card {
+        background: #ffffff !important;
+        border: 0px solid transparent !important;
+        border-radius: 12px !important;
+        box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.04) !important;
+        padding: 18px 18px 16px 18px !important;
+        min-height: 190px !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .insight-head {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
         font-size: 0.78rem !important;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: #64748b;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.6px !important;
+        text-transform: uppercase !important;
+        color: #8290a8 !important;
     }
-    .metric-value {
-        font-size: 2.2rem !important;
-        font-weight: 800;
-        color: #1e3a8a;
+
+    .insight-emoji {
+        font-size: 1.05rem !important;
+        line-height: 1 !important;
+    }
+
+    .insight-value {
+        font-size: 1.45rem !important;
+        font-weight: 800 !important;
+        color: #0c1425 !important;
         line-height: 1.1 !important;
     }
-    
-    /* Glassmorphic Takeaways / Bullet Box */
-    .takeaways-box {
-        background: #ffffff;
-        border: 1px solid rgba(37, 99, 235, 0.18);
-        border-radius: 12px;
-        padding: 16px 24px !important;
-        margin-top: 20px !important;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-    }
-    .takeaways-title {
-        color: #1e3a8a;
-        font-size: 1.25rem !important;
-        font-weight: 700;
-        margin-bottom: 12px !important;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .takeaway-bullet {
-        margin-bottom: 8px !important;
-        line-height: 1.5;
-        color: #334155;
-        font-size: 0.9rem !important;
-    }
-    .takeaway-bullet strong {
-        color: #0f172a;
-    }
-    
-    /* Sidebar Styling */
-    section[data-testid="stSidebar"] {
-        background-color: #ffffff !important;
-        border-right: 1px solid #e2e8f0 !important;
-    }
-    
-    /* Filter Section Title */
-    .filter-header {
-        color: #0f172a;
-        font-size: 0.95rem !important;
-        font-weight: 700;
-        margin-bottom: 6px !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    /* Container override for st.container(border=True) */
-    div[data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-    }
-    div[data-testid="stVerticalBlockBorderWrapper"] > div {
-        background-color: #ffffff !important;
-    }
-    
-    /* Fix multiselect dropdown: style for light mode */
-    [data-baseweb="select"] > div:first-child {
-        background-color: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 6px !important;
-    }
-    [data-baseweb="select"] span,
-    [data-baseweb="select"] input,
-    [data-baseweb="select"] input::placeholder {
-        color: #0f172a !important;
-    }
-    [data-baseweb="popover"] {
-        background-color: #ffffff !important;
-    }
-    [data-baseweb="menu"] li {
-        color: #0f172a !important;
-        background-color: #ffffff !important;
-    }
-    [data-baseweb="menu"] li:hover {
-        background-color: #f1f5f9 !important;
-    }
 
-    /* Premium Styled Multiselect Pills */
-    [data-baseweb="tag"] {
-        background-color: rgba(37, 99, 235, 0.08) !important;
-        border: 1px solid rgba(37, 99, 235, 0.2) !important;
-        border-radius: 6px !important;
-        padding: 1px 4px !important;
-    }
-    [data-baseweb="tag"] span {
-        color: #2563eb !important;
-        font-weight: 600 !important;
-        font-family: 'Inter', sans-serif !important;
-    }
-    [data-baseweb="tag"] svg {
-        fill: #2563eb !important;
-    }
-    
-    /* Premium Styled Buttons */
-    .stApp div.stButton > button,
-    .stApp div.stButton > button:focus,
-    .stApp div.stButton > button:focus-visible {
-        background-color: #ffffff !important;
-        color: #0f172a !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 8px !important;
-        font-weight: 700 !important;
-        font-family: 'Inter', sans-serif !important;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-        transition: all 0.2s ease !important;
-        padding: 4px 10px !important;
-        min-height: 32px !important;
-        height: 32px !important;
-        font-size: 0.9rem !important;
-    }
-    .stApp div.stButton > button:hover {
-        background-color: #f8fafc !important;
-        border-color: #94a3b8 !important;
-        color: #0f172a !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-        transform: translateY(-1px) !important;
-    }
-    .stApp div.stButton > button:active {
-        transform: translateY(0) !important;
-        background-color: #f1f5f9 !important;
-    }
-
-    /* Premium Styled Segmented Control (Pills) */
-    div[data-testid="stSegmentedControl"] {
-        gap: 6px !important;
-    }
-    div[data-testid="stSegmentedControl"] button {
-        background-color: #ffffff !important;
+    .insight-body {
+        font-size: 0.88rem !important;
         color: #475569 !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 8px !important;
-        font-weight: 700 !important;
-        font-family: 'Inter', sans-serif !important;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-        transition: all 0.2s ease !important;
-        padding: 4px 12px !important;
-        font-size: 0.85rem !important;
-    }
-    div[data-testid="stSegmentedControl"] button:hover {
-        background-color: #f8fafc !important;
-        color: #0f172a !important;
-        border-color: #94a3b8 !important;
-    }
-    div[data-testid="stSegmentedControl"] button[aria-checked="true"] {
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-        border-color: #2563eb !important;
-        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2) !important;
-    }
-    div[data-testid="stSegmentedControl"] button[aria-checked="true"]:hover {
-        background-color: #1d4ed8 !important;
-        border-color: #1d4ed8 !important;
-        color: #ffffff !important;
-    }
-    
-    /* Slider overrides */
-    div[data-testid="stSlider"] label {
-        color: #475569 !important;
-        font-size: 0.85rem !important;
-        font-weight: 600 !important;
-    }
-    div[data-testid="stSlider"] div[role="slider"] {
-        background-color: #2563eb !important;
-        border: 2px solid #ffffff !important;
-    }
-    div[data-testid="stSlider"] div[data-testid="stSliderTrack"] > div {
-        background: #2563eb !important;
-    }
-    div[data-testid="stSlider"] div[data-testid="stSliderTrack"] {
-        background: #e2e8f0 !important;
-    }
-    div[data-testid="stSlider"] div[data-testid="stSliderTickBar"] {
-        color: #64748b !important;
+        line-height: 1.5 !important;
     }
     </style>
 """
 
-# ==============================================================================
-# HTML VIEW RENDERERS
-# ==============================================================================
 def render_header(year_badge: str) -> str:
     return f"""
         <div class="branding-banner">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
                 <div>
                     <h1 class="branding-title">Total Kejadian Banjir di Indonesia</h1>
                     <p class="branding-subtitle">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</p>
                 </div>
-                <div style="font-weight: 700; color: #2563eb; font-size: 1.15rem; border: 1px solid rgba(37, 99, 235, 0.2); padding: 6px 16px; border-radius: 20px; background: rgba(37, 99, 235, 0.05); font-family: 'Inter', sans-serif;">
-                    {year_badge}
-                </div>
+                <div class="year-badge">{year_badge}</div>
             </div>
         </div>
     """
 
-def render_kpi_card(label: str, value: str, icon_name: str, outline: bool = False) -> str:
-    card_class = "metric-card-outline" if outline else "metric-card"
-    icon_color = "#2563eb" if outline else "#64748b"
+def render_kpi_card(label: str, value: str, icon_name: str) -> str:
     return f"""
-        <div class="{card_class}">
-            <div class="metric-label">{svg(icon_name, 16, icon_color)} {label}</div>
+        <div class="metric-card">
+            <div class="metric-label">{svg(icon_name, 13, '#8290a8')}&thinsp;{label}</div>
             <div class="metric-value">{value}</div>
+        </div>
+    """
+
+def render_chart_title(icon_name: str, label: str) -> str:
+    return f'<p class="chart-title">{svg(icon_name, 20, "#3d6ef5")}&thinsp;{label}</p>'
+
+def render_year_display(year: int) -> str:
+    return f'<div class="year-display">{year}</div>'
+
+
+def render_insight_card(emoji: str, label: str, value: str, body: str) -> str:
+    return f"""
+        <div class="insight-card">
+            <div class="insight-head"><span class="insight-emoji">{emoji}</span><span>{label}</span></div>
+            <div class="insight-value">{value}</div>
+            <div class="insight-body">{body}</div>
         </div>
     """
 
@@ -332,19 +330,19 @@ def render_takeaways() -> str:
     return f"""
         <div class="takeaways-box">
             <div class="takeaways-title">
-                <span>{svg('lightbulb', 22, '#2563eb')} Informasi Kunci &amp; Wawasan Data</span>
+                {svg('lightbulb', 17, '#3d6ef5')}&thinsp;Informasi Kunci &amp; Wawasan Data
             </div>
-            <div class="takeaway-bullet">
-                • <strong>Total Beban Risiko:</strong> Dampak kebencanaan banjir di Indonesia tergolong sangat masif dengan ratusan ribu kejadian terdistribusi di berbagai pulau. Skala kejadian yang tinggi dan berulang ini menandakan adanya kerentanan lingkungan yang terstruktur dan konsisten, bukan sekadar anomali cuaca sporadis.
+            <div class="takeaway-item">
+                <strong>Total Beban Risiko</strong> Dampak banjir di Indonesia sangat masif dengan ratusan ribu kejadian terdistribusi di berbagai pulau. Skala yang tinggi dan berulang menandakan kerentanan lingkungan yang terstruktur, bukan anomali cuaca sporadis.
             </div>
-            <div class="takeaway-bullet">
-                • <strong>Konsentrasi Geografis:</strong> Pulau Jawa memikul konsentrasi risiko bencana banjir tertinggi di Indonesia, dipimpin berturut-turut oleh provinsi <strong>Jawa Barat</strong>, <strong>Jawa Timur</strong>, dan <strong>Jawa Tengah</strong>. Konsentrasi ekstrem ini berkorelasi kuat dengan tingginya kepadatan populasi, akselerasi urbanisasi, alih fungsi lahan masif, serta menurunnya daya dukung hidrologis daerah aliran sungai (DAS).
+            <div class="takeaway-item">
+                <strong>Konsentrasi Geografis</strong> Pulau Jawa memikul risiko tertinggi, dipimpin <strong>Jawa Barat</strong>, <strong>Jawa Timur</strong>, dan <strong>Jawa Tengah</strong>. Hal ini berkorelasi kuat dengan kepadatan populasi, urbanisasi, alih fungsi lahan, dan menurunnya daya dukung hidrologis DAS.
             </div>
-            <div class="takeaway-bullet">
-                • <strong>Tren Ekskalasi Waktu:</strong> Grafik tren kejadian tahunan menunjukkan grafik peningkatan kasus secara eksponensial sejak tahun 2016, dengan fluktuasi puncak berada pada rentang tahun 2020-2025. Ekskalasi tajam ini mencerminkan meningkatnya frekuensi curah hujan ekstrem akibat perubahan iklim global serta perluasan basis pelaporan data berita nasional. <em>(Catatan: Data tahun 2026 secara sengaja dikecualikan untuk memastikan objektivitas analisis tahunan yang lengkap).</em>
+            <div class="takeaway-item">
+                <strong>Tren Ekskalasi Waktu</strong> Kasus meningkat eksponensial sejak 2016, dengan puncak pada 2020&ndash;2025. Ini mencerminkan intensifikasi curah hujan ekstrem akibat perubahan iklim dan perluasan cakupan pelaporan. <em>(Data 2026 dikecualikan untuk objektivitas analisis.)</em>
             </div>
-            <div class="takeaway-bullet">
-                • <strong>Rekomendasi Kebijakan Spasial:</strong> Mengingat kerentanan regional yang sangat bervariasi—di mana Pulau Jawa mendominasi secara kuantitas kasus namun wilayah luar Jawa (seperti Sumatra dan Kalimantan) terus mengalami tren kenaikan konstan—mitigasi banjir nasional harus dialihkan dari pendekatan seragam menjadi kebijakan zonasi berbasis karakteristik kepulauan.
+            <div class="takeaway-item">
+                <strong>Rekomendasi Kebijakan Spasial</strong> Kerentanan yang bervariasi antar wilayah mengindikasikan perlunya beralih dari kebijakan seragam ke zonasi berbasis karakteristik kepulauan, dengan prioritas pada wilayah luar Jawa yang trennya terus naik.
             </div>
         </div>
     """
