@@ -2,24 +2,27 @@ import streamlit as st
 import pandas as pd
 import time
 from src.data_loader import load_data, load_geojson
-from src.ui_components import LIGHT_CSS, render_header, render_kpi_card, render_takeaways, svg
+from src.ui_components import (
+    LIGHT_CSS,
+    render_kpi_card,
+    render_takeaways,
+    render_chart_title,
+)
 from src.charts import create_map, create_bar, create_line
 
 # ==============================================================================
-# 1. PAGE INITIALIZATION & CONFIGURATION
+# PAGE CONFIG
 # ==============================================================================
 st.set_page_config(
     page_title="Visualisasi Banjir Indonesia",
     page_icon="🌊",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
-
-# Load Premium Custom Light Style CSS System
 st.markdown(LIGHT_CSS, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. DATA LOADING
+# DATA LOADING
 # ==============================================================================
 try:
     df_prov_annual, df_trend_global = load_data()
@@ -30,262 +33,290 @@ except Exception as e:
     data_loaded = False
 
 # ==============================================================================
-# 3. INTERACTIVE DASHBOARD FRAGMENT RENDERER
+# HELPERS
+# ==============================================================================
+def col_label(text: str):
+    st.markdown(
+        f'<p class="filter-col-label">{text}</p>',
+        unsafe_allow_html=True,
+    )
+
+# ==============================================================================
+# DASHBOARD FRAGMENT
 # ==============================================================================
 if data_loaded:
     @st.fragment
     def render_dashboard():
-        # Initialize session state for playback timeline controls
-        if 'active_year' not in st.session_state:
-            st.session_state.active_year = 2002  # Default to 2002 as shown in the reference image
-        if 'year_slider' not in st.session_state:
-            st.session_state.year_slider = 2002
-        if 'is_playing' not in st.session_state:
-            st.session_state.is_playing = False
-        if 'timeline_mode' not in st.session_state:
-            st.session_state.timeline_mode = "Per Tahun"
-        if 'year_range' not in st.session_state:
-            st.session_state.year_range = (2000, 2025)
-        if 'year_range_slider' not in st.session_state:
-            st.session_state.year_range_slider = (2000, 2025)
-            
-        # Sync states immediately if widget was interacted with
-        if 'year_slider' in st.session_state:
+        defaults = {
+            "active_year": 2002,
+            "year_slider": 2002,
+            "pending_year_slider": None,
+            "is_playing": False,
+            "timeline_mode": "Per Tahun",
+            "year_range": (2000, 2025),
+            "year_range_slider": (2000, 2025),
+        }
+        for k, v in defaults.items():
+            if k not in st.session_state:
+                st.session_state[k] = v
+
+        if st.session_state.pending_year_slider is not None:
+            st.session_state.year_slider = st.session_state.pending_year_slider
+            st.session_state.active_year = st.session_state.pending_year_slider
+            st.session_state.pending_year_slider = None
+
+        if "year_slider" in st.session_state:
             st.session_state.active_year = st.session_state.year_slider
-        if 'year_range_slider' in st.session_state:
+        if "year_range_slider" in st.session_state:
             st.session_state.year_range = st.session_state.year_range_slider
-            
-        # Get active range/year for branding header
+
         if st.session_state.timeline_mode == "Rentang Kustom":
-            start_year, end_year = st.session_state.year_range
-            year_badge = f"Rentang: {start_year} – {end_year}"
+            s, e = st.session_state.year_range
+            year_badge = f"Rentang: {s} – {e}"
         else:
-            start_year = st.session_state.active_year
-            end_year = st.session_state.active_year
-            year_badge = f"Tahun: {start_year}"
+            s = e = st.session_state.active_year
+            year_badge = f"Tahun: {s}"
 
-        # A. BRANDING HEADER
-        st.markdown(render_header(year_badge), unsafe_allow_html=True)
+        # ── TOP HERO: TITLE LEFT, FILTER RIGHT ─────────────────────────
+        provinces_available = sorted(df_prov_annual["Propinsi"].unique().tolist())
 
-        # B. DYNAMIC HORIZONTAL FILTER PANEL
-        st.markdown(f'<p class="filter-header" style="margin-bottom: 8px;">{svg("calendar_month", 18, "#2563eb")} PANEL KONTROL & FILTER ANALISIS</p>', unsafe_allow_html=True)
-        
-        with st.container(border=True):
-            filter_col1, filter_col2, filter_col3 = st.columns([1.1, 1.3, 2.2])
-            provinces_available = sorted(list(df_prov_annual['Propinsi'].unique()))
-            
-            with filter_col1:
-                st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Mode Analisis</p>', unsafe_allow_html=True)
-                
+        top_left, top_right = st.columns([1.35, 1], gap="large", vertical_alignment="top")
+
+        with top_left:
+            st.markdown(
+                """
+                <div class="branding-banner" style="padding:0 !important;">
+                    <h1 class="branding-title">Total Kejadian Banjir di Indonesia</h1>
+                    <p class="branding-subtitle">Visualisasi Data Interaktif Kejadian Banjir Regional (2000 - 2025)</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        with top_right:
+            st.markdown(f'<div class="year-badge" style="width: fit-content; margin-left:auto; margin-bottom: 0.5rem;">{year_badge}</div>', unsafe_allow_html=True)
+
+            mode_col, province_col = st.columns([0.95, 1.05], gap="small")
+
+            with mode_col:
+                col_label("Mode Analisis")
                 mode_options = ["Per Tahun", "Rentang Kustom"]
                 selected_mode = st.segmented_control(
                     "Mode",
                     options=mode_options,
-                    default=st.session_state.timeline_mode if st.session_state.timeline_mode in mode_options else "Per Tahun",
+                    default=st.session_state.timeline_mode
+                    if st.session_state.timeline_mode in mode_options
+                    else "Per Tahun",
                     label_visibility="collapsed",
-                    key="mode_segmented"
+                    key="mode_segmented",
                 )
-                
-                # Defensive handling: prevent deselection from returning None
                 if selected_mode is None:
                     selected_mode = st.session_state.timeline_mode
-                    
                 if selected_mode != st.session_state.timeline_mode:
                     st.session_state.timeline_mode = selected_mode
                     if selected_mode == "Rentang Kustom":
                         st.session_state.is_playing = False
                     st.rerun()
 
-            with filter_col2:
-                st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Pilih Provinsi</p>', unsafe_allow_html=True)
+            with province_col:
+                col_label("Filter Provinsi")
                 selected_provinces = st.multiselect(
-                    "Pilih Provinsi",
+                    "Provinsi",
                     options=provinces_available,
                     default=[],
                     placeholder="Semua Provinsi",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
                 )
-                
-            with filter_col3:
-                if st.session_state.timeline_mode == "Rentang Kustom":
-                    st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Timeline Waktu</p>', unsafe_allow_html=True)
-                    year_range = st.slider(
-                        "Pilih Rentang Tahun",
+
+        st.markdown('<div class="section-gap-lg"></div>', unsafe_allow_html=True)
+
+        # ── TIMELINE CONTROLS: FULL WIDTH BELOW ────────────────────────
+        with st.container():
+            if st.session_state.timeline_mode == "Rentang Kustom":
+                col_label("Rentang Tahun")
+                year_range = st.slider(
+                    "Rentang",
+                    min_value=2000,
+                    max_value=2025,
+                    step=1,
+                    key="year_range_slider",
+                    label_visibility="collapsed",
+                )
+                s, e = year_range
+            else:
+                col_label("Timeline Waktu")
+                slider_col, ctrl_col = st.columns([6, 2], gap="large")
+
+                with slider_col:
+                    active_year = st.slider(
+                        "Tahun",
                         min_value=2000,
                         max_value=2025,
                         step=1,
-                        key="year_range_slider",
-                        label_visibility="collapsed"
+                        key="year_slider",
+                        label_visibility="collapsed",
                     )
-                    start_year, end_year = year_range
-                else:
-                    st.markdown('<p style="font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px;">Timeline Waktu (Live)</p>', unsafe_allow_html=True)
-                    
-                    slider_subcol, controls_subcol = st.columns([55, 45])
-                    
-                    with slider_subcol:
-                        active_year = st.slider(
-                            "Pilih Tahun",
-                            min_value=2000,
-                            max_value=2025,
-                            step=1,
-                            key="year_slider",
-                            label_visibility="collapsed"
-                        )
-                        st.session_state.active_year = active_year
-                        start_year = active_year
-                        end_year = active_year
-                        
-                    with controls_subcol:
-                        c1, c2, c3, c4 = st.columns([1, 1, 1, 1.5])
-                        with c1:
-                            if st.button("«", use_container_width=True, key="btn_back"):
-                                st.session_state.is_playing = False
-                                new_year = max(2000, st.session_state.active_year - 1) if st.session_state.active_year > 2000 else 2025
-                                st.session_state.active_year = new_year
-                                st.session_state.year_slider = new_year
-                                st.rerun()
-                        with c2:
-                            is_playing = st.session_state.is_playing
-                            play_label = "❚❚" if is_playing else "▶"
-                            play_type = "primary" if is_playing else "secondary"
-                            if st.button(play_label, type=play_type, use_container_width=True, key="btn_play"):
-                                st.session_state.is_playing = not is_playing
-                                st.rerun()
-                        with c3:
-                            if st.button("»", use_container_width=True, key="btn_fwd"):
-                                st.session_state.is_playing = False
-                                new_year = st.session_state.active_year + 1 if st.session_state.active_year < 2025 else 2000
-                                st.session_state.active_year = new_year
-                                st.session_state.year_slider = new_year
-                                st.rerun()
-                        with c4:
-                            st.markdown(f"""
-                                <div style="font-weight: 700; font-size: 0.9rem; color: #10b981; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 5px 8px; border-radius: 6px; text-align: center; font-family: 'Inter', sans-serif;">
-                                    {st.session_state.active_year}
-                                </div>
-                            """, unsafe_allow_html=True)
+                    st.session_state.active_year = active_year
+                    s = e = active_year
 
-        # C. DATA FILTERING ENGINE
+                with ctrl_col:
+                    c1, c2, c3, c4 = st.columns([1, 1, 1, 1.4])
+                    with c1:
+                        if st.button("«", use_container_width=True, key="btn_back"):
+                            st.session_state.is_playing = False
+                            st.session_state.pending_year_slider = (
+                                max(2000, st.session_state.active_year - 1)
+                                if st.session_state.active_year > 2000 else 2025
+                            )
+                            st.rerun()
+                    with c2:
+                        is_playing = st.session_state.is_playing
+                        if st.button(
+                            "❚❚" if is_playing else "▶",
+                            type="primary" if is_playing else "secondary",
+                            use_container_width=True,
+                            key="btn_play",
+                        ):
+                            st.session_state.is_playing = not is_playing
+                            st.rerun()
+                    with c3:
+                        if st.button("»", use_container_width=True, key="btn_fwd"):
+                            st.session_state.is_playing = False
+                            st.session_state.pending_year_slider = (
+                                st.session_state.active_year + 1
+                                if st.session_state.active_year < 2025 else 2000
+                            )
+                            st.rerun()
+        # ── DATA FILTERING ──────────────────────────────────────────────
         df_filtered = df_prov_annual[
-            (df_prov_annual['year'] >= start_year) & 
-            (df_prov_annual['year'] <= end_year)
+            (df_prov_annual["year"] >= s) & (df_prov_annual["year"] <= e)
         ]
-        
-        if selected_provinces:
-            df_filtered_agg = df_filtered[df_filtered['Propinsi'].isin(selected_provinces)]
-        else:
-            df_filtered_agg = df_filtered
-            
+        df_filtered_agg = (
+            df_filtered[df_filtered["Propinsi"].isin(selected_provinces)]
+            if selected_provinces else df_filtered
+        )
+
         df_province_summary = (
-            df_filtered_agg.groupby('Propinsi')
+            df_filtered_agg.groupby("Propinsi")
             .agg(
-                total_kejadian=('frekuensi_banjir', 'sum'),
-                total_area_km2=('total_area_km2', 'sum'),
-                median_durasi=('median_durasi_hari', 'median')
+                total_kejadian=("frekuensi_banjir", "sum"),
+                total_area_km2=("total_area_km2", "sum"),
+                median_durasi=("median_durasi_hari", "median"),
             )
             .reset_index()
         )
-        
-        df_master_provinces = pd.DataFrame({"Propinsi": provinces_available})
-        df_province_summary = pd.merge(df_master_provinces, df_province_summary, on="Propinsi", how="left")
-        
+
+        df_master = pd.DataFrame({"Propinsi": provinces_available})
+        df_province_summary = pd.merge(df_master, df_province_summary, on="Propinsi", how="left")
         df_province_summary["total_kejadian"] = df_province_summary["total_kejadian"].fillna(0).astype(int)
         df_province_summary["total_area_km2"] = df_province_summary["total_area_km2"].fillna(0.0)
         df_province_summary["median_durasi"] = df_province_summary["median_durasi"].fillna(0.0)
-        
-        total_events = df_province_summary['total_kejadian'].sum()
-        affected_prov_count = df_province_summary[df_province_summary['total_kejadian'] > 0]['Propinsi'].nunique()
-        
-        if len(df_province_summary[df_province_summary['total_kejadian'] > 0]) > 0:
-            max_prov_row = df_province_summary[df_province_summary['total_kejadian'] > 0].loc[
-                df_province_summary[df_province_summary['total_kejadian'] > 0]['total_kejadian'].idxmax()
-            ]
-            max_prov_name = max_prov_row['Propinsi']
-            max_prov_val = max_prov_row['total_kejadian']
-        else:
-            max_prov_name = "N/A"
-            max_prov_val = 0
 
-        # D. DISPLAY KPI METRICS
-        kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
-        
-        with kpi_col1:
-            st.markdown(render_kpi_card("Total Kejadian Banjir", f"{total_events:,}", "waves"), unsafe_allow_html=True)
-            
-        with kpi_col2:
-            st.markdown(render_kpi_card("Provinsi Terdampak", f"{affected_prov_count}", "map_search"), unsafe_allow_html=True)
-            
-        with kpi_col3:
-            st.markdown(render_kpi_card(f"Kasus Terbanyak ({max_prov_name})", f"{max_prov_val:,}", "flag"), unsafe_allow_html=True)
-            
-        # E. MIDDLE SECTION: GEOSPATIAL MAP (LEFT) & TOP 10 BAR CHART (RIGHT)
-        col_mid1, col_mid2 = st.columns([1.3, 0.7])
-        
-        with col_mid1:
-            st.markdown(f'<h4 style="color: #0f172a; font-size: 1.05rem; margin-top: 6px; margin-bottom: 2px; font-weight: 700;">{svg("map_search", 16, "#2563eb")} Peta Distribusi Kejadian Banjir Regional</h4>', unsafe_allow_html=True)
-            
-            if len(df_province_summary) > 0:
-                with st.container(border=True):
-                    # Calculate absolute maximums for consistent colorbar mapping
-                    if st.session_state.timeline_mode == "Rentang Kustom":
-                        max_val_map = int(df_prov_annual.groupby('Propinsi')['frekuensi_banjir'].sum().max())
-                    else:
-                        max_val_map = int(df_prov_annual['frekuensi_banjir'].max())
-                    fig_map = create_map(df_province_summary, geojson_data, max_val=max_val_map)
-                    st.plotly_chart(fig_map, use_container_width=True)
-            else:
-                st.info("Tidak ada data spasial untuk filter yang dipilih.")
-                
-        with col_mid2:
-            st.markdown(f'<h4 style="color: #0f172a; font-size: 1.05rem; margin-top: 6px; margin-bottom: 2px; font-weight: 700;">{svg("analytics", 16, "#2563eb")} Top 10 Provinsi Kasus Terbanyak</h4>', unsafe_allow_html=True)
-            
-            if len(df_province_summary) > 0:
-                with st.container(border=True):
-                    fig_bar = create_bar(df_province_summary)
-                    st.plotly_chart(fig_bar, use_container_width=True)
-            else:
-                st.info("Tidak ada data untuk diagram batang.")
- 
-        # F. BOTTOM SECTION: TREN KEJADIAN BANJIR TAHUNAN (FULL-WIDTH)
-        st.markdown(f'<h4 style="color: #0f172a; font-size: 1.05rem; margin-top: 6px; margin-bottom: 2px; font-weight: 700;">{svg("chart_data", 16, "#2563eb")} Tren Kejadian Banjir Tahunan</h4>', unsafe_allow_html=True)
-        
-        df_line_filtered = df_prov_annual
-        if selected_provinces:
-            df_line_filtered = df_line_filtered[df_line_filtered['Propinsi'].isin(selected_provinces)]
-            
-        df_yearly_trend = (
-            df_line_filtered.groupby('year')
-            .agg(total_kejadian=('frekuensi_banjir', 'sum'))
-            .reset_index()
-            .sort_values('year')
-        )
-        
-        if len(df_yearly_trend) > 0:
-            with st.container(border=True):
-                fig_line = create_line(
-                    df_yearly_trend,
-                    st.session_state.active_year,
-                    st.session_state.timeline_mode,
-                    start_year,
-                    end_year
-                )
-                st.plotly_chart(fig_line, use_container_width=True)
+        total_events = int(df_province_summary["total_kejadian"].sum())
+        affected_prov_count = int((df_province_summary["total_kejadian"] > 0).sum())
+
+        nonzero = df_province_summary[df_province_summary["total_kejadian"] > 0]
+        if len(nonzero) > 0:
+            max_row = nonzero.loc[nonzero["total_kejadian"].idxmax()]
+            max_prov_name, max_prov_val = max_row["Propinsi"], int(max_row["total_kejadian"])
         else:
+            max_prov_name, max_prov_val = "N/A", 0
+
+        # ── KPI CARDS ───────────────────────────────────────────────────
+        kc1, kc2, kc3 = st.columns(3)
+        with kc1:
+            st.markdown(render_kpi_card("Total Kejadian Banjir", f"{total_events:,}", "waves"), unsafe_allow_html=True)
+        with kc2:
+            st.markdown(render_kpi_card("Provinsi Terdampak", str(affected_prov_count), "map_search"), unsafe_allow_html=True)
+        with kc3:
+            st.markdown(
+                render_kpi_card(f"Kasus Terbanyak ({max_prov_name})", f"{max_prov_val:,}", "flag"),
+                unsafe_allow_html=True,
+            )
+
+        # ── MAP — NO BORDER & PURE WHITE BACKGROUND ─────────────────────
+        if len(df_province_summary) > 0:
+            map_col, bar_col = st.columns([1.35, 0.75], gap="large")
+
+            with map_col:
+                st.markdown(render_chart_title("map_search", "Peta Distribusi Kejadian Banjir Regional"), unsafe_allow_html=True)
+
+                max_val_map = (
+                    int(df_prov_annual.groupby("Propinsi")["frekuensi_banjir"].sum().max())
+                    if st.session_state.timeline_mode == "Rentang Kustom"
+                    else int(df_prov_annual["frekuensi_banjir"].max())
+                )
+                fig_map = create_map(df_province_summary, geojson_data, max_val=max_val_map)
+
+                fig_map.update_layout(
+                    height=360,
+                    margin=dict(l=0, r=0, t=10, b=0),
+                    autosize=True,
+                    paper_bgcolor="#ffffff",
+                    plot_bgcolor="#ffffff"
+                )
+
+                st.plotly_chart(
+                    fig_map,
+                    use_container_width=True,
+                    config={"responsive": True, "displayModeBar": False, "scrollZoom": False}
+                )
+
+            with bar_col:
+                st.markdown(render_chart_title("analytics", "Top 10 Provinsi Kasus Terbanyak"), unsafe_allow_html=True)
+                fig_bar = create_bar(df_province_summary)
+                fig_bar.update_layout(
+                    margin=dict(l=0, r=16, t=8, b=0),
+                    paper_bgcolor="#ffffff",
+                    plot_bgcolor="#ffffff"
+                )
+                st.plotly_chart(fig_bar, use_container_width=True)
+        else:
+            st.info("Tidak ada data spasial untuk filter yang dipilih.")
+
+        st.markdown('<div class="section-gap-lg"></div>', unsafe_allow_html=True)
+
+        # ── LINE — FULL WIDTH BELOW ────────────────────────────────────
+        df_line_filtered = (
+            df_prov_annual[df_prov_annual["Propinsi"].isin(selected_provinces)]
+            if selected_provinces else df_prov_annual
+        )
+        df_yearly_trend = (
+            df_line_filtered.groupby("year")
+            .agg(total_kejadian=("frekuensi_banjir", "sum"))
+            .reset_index()
+            .sort_values("year")
+        )
+        if len(df_yearly_trend) > 0:
+            st.markdown(render_chart_title("chart_data", "Tren Kejadian Banjir Tahunan"), unsafe_allow_html=True)
+            fig_line = create_line(
+                df_yearly_trend,
+                st.session_state.active_year,
+                st.session_state.timeline_mode,
+                s, e,
+            )
+
+            fig_line.update_layout(
+                margin=dict(l=0, r=16, t=8, b=0),
+                paper_bgcolor="#ffffff",
+                plot_bgcolor="#ffffff"
+            )
+
+            st.plotly_chart(fig_line, use_container_width=True)
+        else:
+            st.markdown(render_chart_title("chart_data", "Tren Kejadian Banjir Tahunan"), unsafe_allow_html=True)
             st.info("Tidak ada data untuk diagram garis tren.")
-                
-        # Handle animation playback rerun loop
+
+        # ── PLAYBACK LOOP ───────────────────────────────────────────────
         if st.session_state.is_playing and st.session_state.timeline_mode == "Per Tahun":
-            time.sleep(0.7)  # Dynamic, fluid frame transitions
+            time.sleep(0.7)
             next_year = st.session_state.active_year + 1
             if next_year > 2025:
-                next_year = 2000  # Seamless wrap-around
-            st.session_state.active_year = next_year
-            st.session_state.year_slider = next_year
+                next_year = 2000
+            st.session_state.pending_year_slider = next_year
             st.rerun()
 
-    # Executing fragment dashboard
     render_dashboard()
 
-    # G. GLASSMORPHIC INSIGHTS & TAKEAWAYS SECTION (BOTTOM)
+    # TAKEAWAYS
     st.markdown(render_takeaways(), unsafe_allow_html=True)
