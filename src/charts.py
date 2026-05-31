@@ -1,4 +1,5 @@
 import plotly.express as px
+import plotly.graph_objects as go
 
 # ==============================================================================
 # PREMIUM GEOSPATIAL MAP GENERATOR (OPTIMIZED FOR REAL-TIME STREAMING)
@@ -219,6 +220,36 @@ def create_line(df_yearly_trend, active_year, timeline_mode, start_year, end_yea
             align="left"
         )
     )
+
+    if timeline_mode == "Per Tahun" and len(df_yearly_trend) > 0:
+        window_min = max(start_year, active_year - 2)
+        window_max = min(end_year, active_year + 2)
+        df_window = df_yearly_trend[
+            (df_yearly_trend["year"] >= window_min) & (df_yearly_trend["year"] <= window_max)
+        ]
+
+        if len(df_window) > 0:
+            fig_line.add_trace(
+                go.Scatter(
+                    x=df_window["year"],
+                    y=df_window["total_kejadian"],
+                    mode="lines+markers",
+                    name="Jendela 5 Tahun",
+                    line=dict(color="#1d4ed8", width=5, shape="spline"),
+                    marker=dict(color="#ffffff", size=8, line=dict(color="#1d4ed8", width=2.5)),
+                    hovertemplate="<span style='font-size: 14px; font-weight: bold; color: #2563eb;'>Tahun %{x}</span><br><br>" +
+                                  "Total Kejadian: <b>%{y:,}</b> kasus<extra></extra>",
+                    showlegend=False,
+                )
+            )
+
+            fig_line.add_vrect(
+                x0=window_min,
+                x1=window_max,
+                fillcolor="rgba(37, 99, 235, 0.06)",
+                line_width=0,
+                layer="below",
+            )
     
     # If in animation mode, add an elegant vertical dashed line indicating the active year
     if timeline_mode == "Animasi (Play)":

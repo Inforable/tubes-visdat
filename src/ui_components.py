@@ -144,8 +144,97 @@ LIGHT_CSS = """
     /* 7. UI CONTROLS - TANPA BORDER ABU */
     [data-baseweb="select"] > div:first-child { background-color: #f5f7fb !important; border: none !important; border-radius: 8px !important; box-shadow: 0 1px 4px rgba(0,0,0,0.02) !important; }
     .stApp div.stButton > button { background-color: #ffffff !important; color: #374258 !important; border: none !important; border-radius: 8px !important; font-weight: 600 !important; font-size: 0.875rem !important; padding: 3px 10px !important; height: 32px !important; box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important; }
-    div[data-testid="stSegmentedControl"] button[aria-checked="true"] { background-color: #3d6ef5 !important; color: #ffffff !important; border: none !important; }
-    div[data-testid="stSegmentedControl"] button { border: none !important; box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important; }
+    div[data-testid="stSegmentedControl"],
+    div[data-testid="stSegmentedControl"] > div,
+    div[data-testid="stSegmentedControl"] div[role="radiogroup"],
+    div[data-baseweb="radio"] [role="radiogroup"] {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        gap: 0 !important;
+        overflow: hidden !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button,
+    div[data-baseweb="radio"] [role="radiogroup"] label {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
+        border: 1px solid #d5ddea !important;
+        background: #f7f9fc !important;
+        color: #334155 !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:not(:last-child) {
+        border-right: 0 !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:first-child,
+    div[data-baseweb="radio"] [role="radiogroup"] label:first-child {
+        border-radius: 8px 0 0 8px !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:last-child,
+    div[data-baseweb="radio"] [role="radiogroup"] label:last-child {
+        border-radius: 0 8px 8px 0 !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button[aria-checked="true"],
+    div[data-baseweb="radio"] [role="radiogroup"] input:checked + div,
+    div[data-baseweb="radio"] [role="radiogroup"] label:has(input:checked) {
+        background-color: #3d6ef5 !important;
+        color: #ffffff !important;
+        border-color: #3d6ef5 !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:focus-visible,
+    div[data-baseweb="radio"] [role="radiogroup"] label:focus-within {
+        outline: 2px solid rgba(61,110,245,0.35) !important;
+        outline-offset: 2px !important;
+    }
+
+    div[data-testid="stSegmentedControl"] button:hover,
+    div[data-baseweb="radio"] [role="radiogroup"] label:hover {
+        border-color: #b9c7f6 !important;
+        background: #eef3ff !important;
+    }
+
+    @media (max-width: 640px) {
+        div[data-testid="stSegmentedControl"],
+        div[data-testid="stSegmentedControl"] > div,
+        div[data-testid="stSegmentedControl"] div[role="radiogroup"],
+        div[data-baseweb="radio"] [role="radiogroup"] {
+            flex-direction: column !important;
+        }
+
+        div[data-testid="stSegmentedControl"] button,
+        div[data-baseweb="radio"] [role="radiogroup"] label {
+            width: 100% !important;
+            border-right: 1px solid #d5ddea !important;
+        }
+
+        div[data-testid="stSegmentedControl"] button:first-child,
+        div[data-baseweb="radio"] [role="radiogroup"] label:first-child {
+            border-radius: 8px 8px 0 0 !important;
+        }
+
+        div[data-testid="stSegmentedControl"] button:last-child,
+        div[data-baseweb="radio"] [role="radiogroup"] label:last-child {
+            border-radius: 0 0 8px 8px !important;
+            border-top: 0 !important;
+        }
+
+        div[data-testid="stSegmentedControl"] button:not(:last-child),
+        div[data-baseweb="radio"] [role="radiogroup"] label:not(:last-child) {
+            border-right: 1px solid #d5ddea !important;
+            border-bottom: 0 !important;
+        }
+    }
     div[data-testid="stSlider"] div[role="slider"] { background-color: #3d6ef5 !important; border: 2px solid #ffffff !important; }
     div[data-testid="stSlider"] div[data-testid="stSliderTrack"] > div { background-color: #3d6ef5 !important; }
     
