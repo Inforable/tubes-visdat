@@ -71,29 +71,23 @@ def add_island_mapping(df: pd.DataFrame) -> pd.DataFrame:
     df["Pulau"] = df["Propinsi"].map(PROVINCE_TO_PULAU).fillna("Lainnya")
     return df
 
-# ==============================================================================
-# DATA LOADING & CACHING (EXCLUDING 2026)
-# ==============================================================================
 @st.cache_data
 def load_data():
     # Load aggregated province & annual datasets
     df_prov_annual = pd.read_csv(DATA_DIR / "banjir_provinsi_tahunan.csv")
     df_trend_global = pd.read_csv(DATA_DIR / "trend_banjir_indonesia_2000_2026.csv")
     
-    # ⚠️ CRITICAL: Exclude 2026 entirely as per user feedback
     df_prov_annual = df_prov_annual[df_prov_annual['year'] < 2026]
     df_trend_global = df_trend_global[df_trend_global['year'] < 2026]
     df_prov_annual = add_island_mapping(df_prov_annual)
     
     return df_prov_annual, df_trend_global
 
-# Indonesian Province GeoJSON boundary maps URL
 GEOJSON_URL = "https://raw.githubusercontent.com/superpikar/indonesia-geojson/master/indonesia-province-simple.json"
 LOCAL_GEOJSON_PATH = DATA_DIR / "indonesia_province_simple.geojson"
 
 @st.cache_data
 def load_geojson():
-    """Loads and caches the Indonesian Province GeoJSON dict once from the URL to optimize map rendering performance."""
     try:
         req = urllib.request.Request(
             GEOJSON_URL, 

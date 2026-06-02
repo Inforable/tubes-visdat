@@ -1,20 +1,7 @@
 import plotly.express as px
 import plotly.graph_objects as go
 
-# ==============================================================================
-# PREMIUM GEOSPATIAL MAP GENERATOR (OPTIMIZED FOR REAL-TIME STREAMING)
-# ==============================================================================
-def create_map(df_province_summary, geojson_data, range_color=None, zoom_to_selection=False):
-    """
-    Returns fig_map configured with:
-    - Pre-parsed cached GeoJSON data to ensure extremely fast render loop.
-    - Premium slate-to-navy sequential color scale.
-    - Transparent background.
-    - Horizontal custom colorbar.
-    - Custom HTML hover tooltips.
-    - stable uirevision to avoid resetting zoom and pan coordinates when dragging.
-    """
-    # Premium sequential scale from clean off-white (#f8fafc) up to deep navy (#1e3a8a)
+def create_map(df_province_summary, geojson_data, range_color=None):
     custom_navy_scale = [
         [0.0, "#f8fafc"],      # Clean off-white for exactly 0 occurrences (dry/safe land)
         [0.00001, "#dbeafe"],  # Extremely soft light blue for starting cases
@@ -48,27 +35,22 @@ def create_map(df_province_summary, geojson_data, range_color=None, zoom_to_sele
         hover_data=["Propinsi", "total_area_km2"]
     )
 
-    geos_kwargs = dict(
+    fig_map.update_geos(
         projection_type="mercator",
         visible=False,
         showcoastlines=False,
         showcountries=False,
         showframe=False,
-        bgcolor="rgba(0,0,0,0)"
+        bgcolor="rgba(0,0,0,0)",
+        lonaxis_range=[94.0, 142.0],
+        lataxis_range=[-11.5, 8.5],
     )
-    if zoom_to_selection:
-        geos_kwargs["fitbounds"] = "locations"
-    else:
-        geos_kwargs["lonaxis_range"] = [94.0, 142.0]
-        geos_kwargs["lataxis_range"] = [-11.0, 8.0]
-
-    fig_map.update_geos(**geos_kwargs)
     
     fig_map.update_layout(
         height=360,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        uirevision="constant",  # 🔒 CRITICAL: Keeps zoom/pan locked during real-time dragging!
+        uirevision="constant",
         margin={"r": 0, "t": 10, "l": 0, "b": 10},
         coloraxis_colorbar=dict(
             orientation="h",
@@ -87,7 +69,7 @@ def create_map(df_province_summary, geojson_data, range_color=None, zoom_to_sele
     )
     
     fig_map.update_traces(
-        marker_line_color="#cbd5e1",  # Crisp border to distinguish adjacent/inactive provinces
+        marker_line_color="#cbd5e1",
         marker_line_width=0.6,
         hovertemplate="<span style='font-size: 14px; font-weight: bold; color: #2563eb;'>%{customdata[0]}</span><br><br>" +
                       "Total Kejadian: <b>%{z:,}</b> kasus<br>" +
@@ -104,19 +86,7 @@ def create_map(df_province_summary, geojson_data, range_color=None, zoom_to_sele
     
     return fig_map
 
-# ==============================================================================
-# TOP 10 HORIZONTAL BAR CHART GENERATOR (WITH LABELS & INSTANT FEEDBACK)
-# ==============================================================================
 def create_bar(df_province_summary):
-    """
-    Returns fig_bar configured with:
-    - Sort & selection of top 10 provinces.
-    - Exact event numbers rendered on each bar label (outside).
-    - Royal blue horizontal bars.
-    - Custom hover tooltips.
-    - Soft slate gridlines.
-    - stable uirevision to avoid redraw flashes.
-    """
     df_top10 = (
         df_province_summary[df_province_summary["total_kejadian"] > 0]
         .nlargest(10, "total_kejadian")
@@ -128,7 +98,7 @@ def create_bar(df_province_summary):
         x="total_kejadian",
         y="Propinsi",
         orientation='h',
-        text="total_kejadian",  # 🏷️ CRITICAL: Sets the bar text source to display values directly!
+        text="total_kejadian",
         labels={
             "total_kejadian": "Total Kejadian",
             "Propinsi": "Provinsi"
@@ -143,9 +113,9 @@ def create_bar(df_province_summary):
         marker_line_color='#1d4ed8',
         marker_line_width=1.5,
         opacity=0.95,
-        texttemplate='%{text:,}',     # 🏷️ Beautiful thousands separators formatting
-        textposition='outside',        # 🏷️ Places labels on the outside right of bars
-        cliponaxis=False,              # 🚫 Prevents labels from being cropped by axis limits!
+        texttemplate='%{text:,}', 
+        textposition='outside',
+        cliponaxis=False, 
         hovertemplate="<span style='font-size: 14px; font-weight: bold; color: #2563eb;'>%{y}</span><br><br>" +
                       "Total Kejadian: <b>%{x:,}</b> kasus<extra></extra>",
         hoverlabel=dict(
@@ -163,7 +133,7 @@ def create_bar(df_province_summary):
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font_color="#0f172a",
-        uirevision="constant",  # 🔒 CRITICAL: Keeps interactions locked during real-time updates!
+        uirevision="constant", 
         margin={"r": 50, "t": 15, "l": 15, "b": 15},
         xaxis=dict(
             title="Total Kejadian",
@@ -181,17 +151,7 @@ def create_bar(df_province_summary):
     
     return fig_bar
 
-# ==============================================================================
-# ANNUAL LINE CHART GENERATOR (WITH DYNAMIC FILL & MARKERS)
-# ==============================================================================
 def create_line(df_yearly_trend, active_year, timeline_mode, start_year, end_year):
-    """
-    Returns fig_line configured with:
-    - Custom smooth splines and filled blue markers.
-    - Soft underfill.
-    - Vertical dashed guidance indicator if timeline_mode is animation.
-    - stable uirevision to avoid layout jumps on slider drags.
-    """
     fig_line = px.line(
         df_yearly_trend,
         x="year",
@@ -251,7 +211,6 @@ def create_line(df_yearly_trend, active_year, timeline_mode, start_year, end_yea
                 layer="below",
             )
     
-    # If in animation mode, add an elegant vertical dashed line indicating the active year
     if timeline_mode == "Animasi (Play)":
         fig_line.add_vline(
             x=active_year,
@@ -268,7 +227,7 @@ def create_line(df_yearly_trend, active_year, timeline_mode, start_year, end_yea
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font_color="#0f172a",
-        uirevision="constant",  # 🔒 CRITICAL: Keeps interactions locked during real-time updates!
+        uirevision="constant",
         margin={"r": 15, "t": 15, "l": 15, "b": 15},
         xaxis=dict(
             title="Tahun",

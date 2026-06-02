@@ -89,6 +89,165 @@ LIGHT_CSS = """
     .filter-col-label { font-size: 0.7rem !important; font-weight: 700 !important; letter-spacing: 0.8px !important; text-transform: uppercase !important; color: #8290a8 !important; margin: 0 0 8px 0 !important; }
     .chart-title { font-size: 1.1rem !important; font-weight: 700 !important; color: #0c1425 !important; margin: 0 0 10px 0 !important; display: flex !important; align-items: center !important; }
 
+    .header-shell {
+        background: #ffffff !important;
+        border: 1px solid #e4eaf3 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 26px rgba(12, 20, 37, 0.06) !important;
+        padding: 1.1rem 1.15rem 1rem 1.15rem !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    .header-shell [data-testid="stVerticalBlock"] {
+        gap: 0.65rem !important;
+    }
+
+    .header-branding {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .header-year-badge {
+        width: fit-content !important;
+        margin-left: auto !important;
+        margin-right: 0 !important;
+        margin-bottom: 0 !important;
+        justify-self: end !important;
+    }
+
+    .header-divider {
+        height: 1px !important;
+        background: linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0)) !important;
+        margin: 0.15rem 0 0.3rem 0 !important;
+    }
+
+    .header-shell [data-testid="stHorizontalBlock"] {
+        gap: 0.75rem !important;
+        align-items: end !important;
+    }
+
+    .header-shell [data-testid="stSelectbox"],
+    .header-shell [data-testid="stSelectbox"] > div,
+    .header-shell [data-baseweb="select"] {
+        width: 100% !important;
+        margin-top: 0 !important;
+    }
+
+    .header-shell [data-testid="stSelectbox"] label,
+    .header-shell .stSelectbox label {
+        display: none !important;
+    }
+
+    .header-shell [data-testid="stSelectbox"] > div:first-child,
+    .header-shell [data-baseweb="select"] > div:first-child {
+        min-height: 40px !important;
+        align-items: center !important;
+    }
+
+    .header-shell .stSelectbox {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .header-shell .stSelectbox > div {
+        margin-top: 0 !important;
+    }
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 26px rgba(12, 20, 37, 0.06) !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        padding: 1rem 1.05rem 0.9rem 1.05rem !important;
+    }
+
+    .header-title-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .header-title-block {
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .header-year-badge {
+        width: fit-content !important;
+        margin-left: auto !important;
+        margin-right: 0 !important;
+        margin-top: 0.1rem !important;
+        white-space: nowrap !important;
+    }
+
+    .header-divider {
+        height: 1px !important;
+        width: 100% !important;
+        background: linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0)) !important;
+        margin: 0.45rem 0 0.35rem 0 !important;
+    }
+
+    .branding-title {
+        font-size: 1.75rem !important;
+        font-weight: 800 !important;
+        color: #0c1425 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1.1 !important;
+    }
+
+    .branding-subtitle {
+        font-size: 0.9rem !important;
+        font-weight: 400 !important;
+        color: #8290a8 !important;
+        margin: 0.2rem 0 0 0 !important;
+        padding: 0 !important;
+        line-height: 1.35 !important;
+    }
+
+    .header-divider {
+        height: 1px !important;
+        width: 100% !important;
+        background: linear-gradient(90deg, rgba(228,234,243,0), #e4eaf3, rgba(228,234,243,0)) !important;
+        margin: 0.4rem 0 0.35rem 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"] {
+        gap: 0.65rem !important;
+        align-items: end !important;
+    }
+
+    [data-testid="stSelectbox"] {
+        margin-top: 0 !important;
+    }
+
+    [data-testid="stSelectbox"] > div,
+    [data-baseweb="select"] {
+        width: 100% !important;
+        margin-top: 0 !important;
+    }
+
+    [data-testid="stSelectbox"] label,
+    .stSelectbox label {
+        display: none !important;
+    }
+
+    [data-testid="stSelectbox"] > div:first-child,
+    [data-baseweb="select"] > div:first-child {
+        min-height: 40px !important;
+        align-items: center !important;
+        border-radius: 8px !important;
+    }
+
+    .filter-col-label {
+        margin: 0 0 0.35rem 0 !important;
+    }
+
     .top-hero-row {
         display: flex !important;
         align-items: flex-start !important;
@@ -144,6 +303,21 @@ LIGHT_CSS = """
     /* 7. UI CONTROLS - TANPA BORDER ABU */
     [data-baseweb="select"] > div:first-child { background-color: #f5f7fb !important; border: none !important; border-radius: 8px !important; box-shadow: 0 1px 4px rgba(0,0,0,0.02) !important; }
     .stApp div.stButton > button { background-color: #ffffff !important; color: #374258 !important; border: none !important; border-radius: 8px !important; font-weight: 600 !important; font-size: 0.875rem !important; padding: 3px 10px !important; height: 32px !important; box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important; }
+    .stApp div.stButton > button[data-testid="baseButton-secondary"],
+    .stApp div.stButton > button[data-testid="baseButton-primary"] {
+        background-color: #f5f7fb !important;
+        border: 1px solid #dce2ed !important;
+        border-radius: 8px !important;
+        color: #334155 !important;
+        min-height: 36px !important;
+        padding: 0.4rem 0.8rem !important;
+    }
+
+    .stApp div.stButton > button[data-testid="baseButton-primary"] {
+        background-color: #3d6ef5 !important;
+        color: #ffffff !important;
+        border-color: #3d6ef5 !important;
+    }
     div[data-testid="stSegmentedControl"],
     div[data-testid="stSegmentedControl"] > div,
     div[data-testid="stSegmentedControl"] div[role="radiogroup"],
@@ -269,9 +443,11 @@ LIGHT_CSS = """
         color: #8290a8 !important;
     }
 
-    .insight-emoji {
+    .insight-icon {
         font-size: 1.05rem !important;
         line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
     }
 
     .insight-value {
@@ -317,10 +493,10 @@ def render_year_display(year: int) -> str:
     return f'<div class="year-display">{year}</div>'
 
 
-def render_insight_card(emoji: str, label: str, value: str, body: str) -> str:
+def render_insight_card(icon_name: str, label: str, value: str, body: str) -> str:
     return f"""
         <div class="insight-card">
-            <div class="insight-head"><span class="insight-emoji">{emoji}</span><span>{label}</span></div>
+            <div class="insight-head"><span class="insight-icon">{svg(icon_name, 16, '#3d6ef5')}</span><span>{label}</span></div>
             <div class="insight-value">{value}</div>
             <div class="insight-body">{body}</div>
         </div>
