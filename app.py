@@ -11,6 +11,13 @@ from src.ui_components import (
 )
 from src.charts import create_map, create_bar, create_line
 
+PLOTLY_CONFIG = {
+    "responsive": True,
+    "displayModeBar": True,
+    "scrollZoom": True,
+    "doubleClick": "reset",
+}
+
 st.set_page_config(
     page_title="Visualisasi Banjir Indonesia",
     page_icon=str(Path(__file__).resolve().parent / "assets" / "waves_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg"),
@@ -278,7 +285,7 @@ if data_loaded:
                 st.plotly_chart(
                     fig_map,
                     use_container_width=True,
-                    config={"responsive": True, "displayModeBar": False, "scrollZoom": False}
+                    config=PLOTLY_CONFIG,
                 )
 
             with bar_col:
@@ -289,7 +296,7 @@ if data_loaded:
                     paper_bgcolor="#ffffff",
                     plot_bgcolor="#ffffff"
                 )
-                st.plotly_chart(fig_bar, use_container_width=True)
+                st.plotly_chart(fig_bar, use_container_width=True, config=PLOTLY_CONFIG)
         else:
             st.info("Tidak ada data spasial untuk filter yang dipilih.")
 
@@ -325,7 +332,7 @@ if data_loaded:
                 plot_bgcolor="#ffffff"
             )
 
-            st.plotly_chart(fig_line, use_container_width=True)
+            st.plotly_chart(fig_line, use_container_width=True, config=PLOTLY_CONFIG)
         else:
             st.markdown(render_chart_title("chart_data", "Tren Kejadian Banjir Tahunan"), unsafe_allow_html=True)
             st.info("Tidak ada data untuk diagram garis tren.")
